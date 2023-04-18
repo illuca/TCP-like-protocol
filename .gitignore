@@ -37,4 +37,6 @@ build/
 ### Mac OS ###
 .DS_Store
 
-src/main/java/org/example/test4
+/src/main/java/org/example/test4/
+/src/main/java/org/example/test1/
+/src/main/java/org/example/test2/
