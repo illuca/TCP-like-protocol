@@ -32,4 +32,5 @@ public class Utils {
         double randomValue = random.nextFloat();
         return randomValue >= rlp;
     }
+
 }

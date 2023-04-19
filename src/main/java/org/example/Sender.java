@@ -15,12 +15,14 @@ package org.example; /**
     Author: Wei Song (Tutor for COMP3331/9331)
  */
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.net.*;
 import java.io.*;
-import java.util.Arrays;
-import java.util.Random;
+import java.util.*;
+import java.util.concurrent.locks.Lock;
 import java.util.logging.*;
-
+import java.util.concurrent.locks.ReentrantLock;
 
 
 
@@ -33,7 +35,7 @@ public class Sender {
         CLOSING,
         FIN_WAIT,
     }
-    /** 
+    /**
         The Sender will be able to connect the Receiver via UDP
         :param sender_port: the UDP port number to be used by the sender to send PTP segments to the receiver
         :param receiver_port: the UDP port number on which receiver is expecting to receive PTP segments from the sender
@@ -46,7 +48,7 @@ public class Sender {
     private final int receiverPort;
     private final InetAddress senderAddress;
 
-    private int currentSeq;
+    private int ISN;
     private int expectedSeq;
     private final InetAddress receiverAddress;
     private final DatagramSocket senderSocket;
@@ -54,9 +56,11 @@ public class Sender {
     private StringBuffer log = null;
     private State state = State.CLOSED;
     private final String filename;
+    // must >= 1000. and should be n * 1000
     private final int maxWin;
     private final int rto;
-
+    private STPSegment[] unacknowledgedSegments;
+    private Set<Integer> sent;
     private int retransmissionCount = 0;
     private long startTime = 0;
 
@@ -64,8 +68,9 @@ public class Sender {
     private int segmentSentCounter = 0;
     private int retransmittedSegmentCounter = 0;
     private int duplicatedACKCounter = 0;
+    private final Lock lock = new ReentrantLock();
 
-    private final int BUFFERSIZE = 1004;
+    private final int MSS = 1000;
 
     public Sender(int senderPort, int receiverPort, String filename, int maxWin, int rto) throws IOException {
         this.senderPort = senderPort;
@@ -77,14 +82,14 @@ public class Sender {
         this.rto = rto;
         this.log = new StringBuffer();
         this.log.append(new String().format("<snd/rcv/drop> <time> <type of packet> <seq-number> <number-ofbytes> <ack-number>%n"));
+        this.unacknowledgedSegments = new STPSegment[maxWin / MSS];
+        this.sent = new HashSet<>();
 
         // init the UDP socket
         Logger.getLogger(Sender.class.getName()).log(Level.INFO, "The sender is using the address {0}:{1}", new Object[] { senderAddress, senderPort });
         this.senderSocket = new DatagramSocket(senderPort, senderAddress);
 //        this.senderSocket.setSoTimeout(this.rto);
         // start the listening sub-thread
-//        Thread listenThread = new Thread(this::listen);
-//        listenThread.start();
 
         // todo add codes here
     }
@@ -99,22 +104,22 @@ public class Sender {
                 && this.retransmissionCount < 3) {
             Random random = new Random();
 //            this.currentSeq = random.nextInt(65536);
-            this.currentSeq = 4521;
-            this.sendFlagPacket(STPSegment.SYN, this.currentSeq);
+            this.ISN = 4521;
+            sendFlagPacket(STPSegment.SYN, this.ISN);
             this.state = State.SYN_SENT;
 
             // try to get ack
             try {
-                DatagramPacket incoming = this.receive();
+                DatagramPacket incoming = receive();
                 STPSegment incomingSegment = STPSegment.fromBytes(incoming.getData());
 
                 int type = incomingSegment.getType();
                 int seqNo = incomingSegment.getSeqNo();
-                byte[] received = incomingSegment.getPayload();
 
-                if (type == STPSegment.ACK && seqNo == Utils.seq(this.currentSeq + 1)) {
+
+                if (type == STPSegment.ACK && seqNo == Utils.seq(this.ISN + 1)) {
                     // receive action
-                    this.currentSeq = seqNo;
+                    this.ISN = seqNo;
                     this.state = State.ESTABLISHED;
                     System.out.println("Handshake succeed.");
                 } else {
@@ -134,35 +139,131 @@ public class Sender {
         }
     }
     public void ptpSend() throws IOException {
+        Thread listenThread = new Thread(this::listen);
+        listenThread.start();
+
+        System.out.println("ptpSend is called");
         // todo add codes here
+        int bytesRead = 0;
+        byte[] buffer = new byte[this.MSS];
+        FileInputStream fis = new FileInputStream(this.filename);
+        int seq = this.ISN;
+        boolean flag = true;
         while (true) {
-            FileInputStream fis = new FileInputStream(this.filename);
-            int bytesRead = 0;
-            byte[] buffer = new byte[this.BUFFERSIZE];
-            while ((bytesRead = fis.read(buffer)) != -1) {
-                STPSegment stp = new STPSegment(STPSegment.DATA, this.currentSeq, Arrays.copyOfRange(buffer, 0, bytesRead));
-                byte[] data = stp.toBytes();
-                DatagramPacket packet = new DatagramPacket(data, data.length, this.receiverAddress, this.receiverPort);
-                this.expectedSeq = Utils.seq(this.currentSeq + bytesRead);
-                this.senderSocket.send(packet);
-                logMessage("snd", System.nanoTime(), STPSegment.DATA, this.currentSeq, bytesRead);
+            while(true) {
+                if (flag) {
+                    bytesRead = fis.read(buffer);
+                    long sentTime = System.nanoTime();
+                    long expectedTime = sentTime + this.rto * 1000000L;
+                    int expectedACK = Utils.seq(seq + bytesRead);
+                    System.out.println("seq=" + seq);
+                    STPSegment newStp = new STPSegment(STPSegment.DATA, seq, expectedACK, Arrays.copyOfRange(buffer, 0, bytesRead), sentTime, expectedTime);
+                    System.out.println("newStp = " + newStp);
+                    seq = expectedACK;
+                    System.out.println("--");
+                    printMyArray(this.unacknowledgedSegments);
+                    System.out.println("--");
+                    flag = addValue(this.unacknowledgedSegments, newStp);
+                    System.out.println("flag = " + flag);
+                }
+                if (bytesRead == -1) {
+                    break;
+                }
+                printMyArray(this.unacknowledgedSegments);
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
+                if (!flag){
+                    System.out.println("addValue failed.");
+                }
+                if (isFull(this.unacknowledgedSegments)) {
+                    break;
+                }
             }
 
-            DatagramPacket receivedPacket = this.receive();
-            STPSegment receivedSegment = STPSegment.fromBytes(receivedPacket.getData(), receivedPacket.getLength());
-            if (receivedSegment.getType() == STPSegment.ACK && receivedSegment.getSeqNo() == this.expectedSeq) {
-                this.currentSeq = this.expectedSeq;
-                logMessage("rcv", System.nanoTime(), STPSegment.ACK, receivedSegment.getSeqNo(), 0);
-                fis.close();
+            for (int i = 0; i < this.unacknowledgedSegments.length; i++) {
+                System.out.println("for");
+                STPSegment stp = this.unacknowledgedSegments[i];
+                if (stp == null) {
+                    continue;
+                }
+                byte[] data = stp.toBytes();
+                DatagramPacket packet = new DatagramPacket(data, data.length, this.receiverAddress, this.receiverPort);
+                System.out.println("this.sent=" + this.sent);
+                if (!this.sent.contains(stp.getSeqNo())
+//                        || isTimeout(stp)
+                ) {
+                    this.senderSocket.send(packet);
+                    logMessage("snd", stp.getSendTime(), STPSegment.DATA, stp.getSeqNo(), bytesRead);
+                    try {
+                        lock.lock();
+                        this.sent.add(stp.getSeqNo());
+                    } finally {
+                        lock.unlock();
+                    }
+                }
+            }
+            if(bytesRead == -1) {
                 break;
             }
-            fis.close();
         }
+        System.out.println("bytesRead=" + bytesRead);
+        fis.close();
+    }
+
+    private boolean isArrayEmpty(STPSegment[] unacknowledgedSegments) {
+        int counter=0;
+        for (int i = 0; i < unacknowledgedSegments.length; i++) {
+            if(unacknowledgedSegments[i]!=null) {
+                counter++;
+            }
+        }
+        return counter == 0;
+    }
+
+    private void printMyArray(STPSegment[] unacknowledgedSegments) {
+        for (int i = 0; i < unacknowledgedSegments.length; i++) {
+            if (unacknowledgedSegments[i] != null) {
+                System.out.println("unacknowledgedSegment[i] = " + unacknowledgedSegments[i]);
+            }
+        }
+    }
+
+    private boolean addValue(STPSegment[] array, STPSegment stp) {
+        for (int i = 0; i < array.length; i++) {
+            if (array[i] == null) {
+                array[i] = stp;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isFull(STPSegment[] array) {
+        int counter = 0;
+        for (int i = 0; i < array.length; i++) {
+            if (array[i] != null) {
+                counter++;
+            }
+        }
+        return counter == array.length;
+    }
+
+
+    private boolean isTimeout(STPSegment stp) {
+        return false;
+//        if (System.nanoTime() > stp.getExpectedSeqNo()) {
+//            return true;
+//        }
+//        return false;
     }
 
     public void ptpClose() throws IOException {
         // todo add codes here
-        sendFlagPacket(STPSegment.FIN, Utils.seq(this.currentSeq + 1));
+        sendFlagPacket(STPSegment.FIN, Utils.seq(this.ISN + 1));
         this.state = State.FIN_WAIT;
 
         this.log.append(String.format("%d\t%d\t%d\t%d%n",
@@ -217,21 +318,45 @@ public class Sender {
         return packet;
     }
 
-//    public void listen() {
-//        byte[] receiveData = new byte[BUFFERSIZE];
-//        DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-//        try {
-//            // listen to incoming packets from receiver
+    public void listen() {
+        System.out.println("listen is called");
+        try {
+            // listen to incoming packets from receiver
+            while (this.state == State.ESTABLISHED) {
+                DatagramPacket ack = receive();
+                STPSegment ackSegment = STPSegment.fromBytes(ack.getData(), ack.getLength());
+                int index = findACK(ackSegment.getSeqNo());
+                if (index != -1) {
+                    lock.lock(); // Acquire the lock
+                    try {
+                        this.unacknowledgedSegments[index] = null;
+                    } finally {
+                        lock.unlock(); // Release the lock
+                    }
+                }
+            }
 //            while (true) {
 //                // try to get ack
-//                senderSocket.receive(receivePacket);
-//                Logger.getLogger(Sender.class.getName()).log(Level.INFO, "received reply from receiver: {0}", incomingMessage);
+//                System.out.println("this.state");
+//                System.out.println(this.state);
+//
 //            }
-//        } catch (IOException e) {
-//            // error while listening, stop the thread
-//            Logger.getLogger(Sender.class.getName()).log(Level.SEVERE, "Error while listening", e);
-//        }
-//    }
+        } catch(IOException e) {
+            // error while listening, stop the thread
+            Logger.getLogger(Sender.class.getName()).log(Level.SEVERE, "Error while listening", e);
+        }
+    }
+
+    private int findACK(int ack) {
+        for (int i = 0; i < this.unacknowledgedSegments.length; i++) {
+            if (this.unacknowledgedSegments[i] != null) {
+                if (this.unacknowledgedSegments[i].getExpectedACK() == ack) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
 
     public void run() throws IOException {
         // todo add/modify codes here

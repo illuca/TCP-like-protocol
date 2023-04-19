@@ -12,12 +12,23 @@ class STPSegment {
 
     private int type;
     private int seqNo;
+    private int expectedACK;
+    private long sendTime;
+    private long expectedACKTime;
     private byte[] payload;
 
     public STPSegment(int type, int seqNo, byte[] payload) {
         this.type = type;
         this.seqNo = seqNo & 0xFFFF; // Ensure the value is in the range 0-65535
         this.payload = payload;
+    }
+    public STPSegment(int type, int seqNo, int expectedACK, byte[] payload, long sendTime, long expectedACKTime) {
+        this.type = type;
+        this.seqNo = seqNo & 0xFFFF;
+        this.expectedACK = expectedACK;
+        this.payload = payload;
+        this.sendTime = sendTime;
+        this.expectedACKTime = expectedACKTime;
     }
 
     public byte[] toBytes() {
@@ -43,6 +54,30 @@ class STPSegment {
         return new STPSegment(type, seqno, payload);
     }
 
+    public int getExpectedACK() {
+        return expectedACK;
+    }
+
+    public void setExpectedACK(int expectedACK) {
+        this.expectedACK = expectedACK;
+    }
+
+    public long getSendTime() {
+        return sendTime;
+    }
+
+    public void setSendTime(long sendTime) {
+        this.sendTime = sendTime;
+    }
+
+    public long getExpectedACKTime() {
+        return expectedACKTime;
+    }
+
+    public void setExpectedACKTime(long expectedACKTime) {
+        this.expectedACKTime = expectedACKTime;
+    }
+
     public static STPSegment fromBytes(byte[] bytes, int totalLength) {
         byte[] realData = Arrays.copyOfRange(bytes, 0, totalLength);
         ByteBuffer buffer = ByteBuffer.wrap(realData);
@@ -58,6 +93,9 @@ class STPSegment {
         return "STPSegment{" +
                 "type=" + type +
                 ", seqNo=" + seqNo +
+                ", expectedACK=" + expectedACK +
+                ", sendTime=" + sendTime +
+                ", expectedACKTime=" + expectedACKTime +
                 ", payload=" + Arrays.toString(payload) +
                 '}';
     }

@@ -84,11 +84,11 @@ public class Receiver {
         Logger.getLogger(Receiver.class.getName()).log(Level.INFO, "The sender is using the address " + serverAddress + " to receive message!");
         this.receiverSocket = new DatagramSocket(receiverPort, serverAddress);
 
-        this.state = State.CLOSED;
+        this.state = State.LISTEN;
     }
 
     public boolean sendFlagPacketInRlp(int type, int sequenceNumber, InetAddress senderAddress) throws IOException {
-        STPSegment stp = new STPSegment(type, sequenceNumber, null);
+        STPSegment stp = new STPSegment(type, sequenceNumber,null);
         byte[] data = stp.toBytes();
         DatagramPacket packet = new DatagramPacket(data, data.length, senderAddress, this.senderPort);
         if(Utils.shouldSendPacket(this.rlp)) {
@@ -103,62 +103,77 @@ public class Receiver {
     }
 
     public void run() throws IOException {
-        byte[] buffer = new byte[BUFFERSIZE];
-        DatagramPacket incomingPacket = new DatagramPacket(buffer, buffer.length);
+        ptpOpen();
+        ptpReceiveData();
+        if (this.state == State.TIME_WAIT) {
+            // 2 * life
+        }
+        ptpClose();
+    }
+
+    private void ptpClose() {
+        // write log
+        this.log.append(String.format("%d\t%d\t%d\t%d\t%d%n",
+                this.receivedDataBytesCounter, this.receivedDataSegmentCounter,
+                this.duplicateSegmentCounter, this.droppedDataSegmentCounter,
+                this.droppedACKCounter));
+        this.receiverSocket.close();
+    }
+
+    private void ptpReceiveData() throws IOException {
         FileOutputStream fos = new FileOutputStream(this.filename);
+        while(this.state == State.ESTABLISHED) {
+            STPSegment received = this.receive();
+            if (!Utils.shouldProcessPacket(flp)) {
+                this.droppedDataSegmentCounter++;
+                continue;
+            }
+            int currentSeq = received.getSeqNo();
+            int currentType = received.getType();
+            byte[] currentReceived = received.getPayload();
 
-        while (true) {
-            // try to receive any incoming message from the sender
-            receiverSocket.receive(incomingPacket);
-            this.senderAddress = incomingPacket.getAddress();
-            byte[] realData = Arrays.copyOfRange(incomingPacket.getData(), 0, incomingPacket.getLength());
-            STPSegment incomingSegment = STPSegment.fromBytes(realData, incomingPacket.getLength());
-            // decide lose packet
+            if (currentType == STPSegment.DATA) {
+                this.receivedDataSegmentCounter++;
+                this.receivedDataBytesCounter += ArrayUtils.getLength(currentReceived);
+                fos.write(currentReceived);
+                fos.flush();
+                sendACK(currentSeq, ArrayUtils.getLength(currentReceived));
+            }
+            if (currentType == STPSegment.FIN) {
+                this.state = State.TIME_WAIT;
+                sendACK(currentSeq, 1);
+            }
+        }
+        fos.close();
+    }
 
-            int currentSeq = incomingSegment.getSeqNo();
-            int currentType = incomingSegment.getType();
-            byte[] currentReceived = incomingSegment.getPayload();
-
-            if (Utils.shouldProcessPacket(flp)) {
-                // do not drop
-                logMessage("rcv", System.nanoTime(), currentType, currentSeq, ArrayUtils.getLength(currentReceived));
-                // handshake
-                if (this.state == State.CLOSED && incomingSegment.getType() == STPSegment.SYN) {
-                    this.state = State.LISTEN;
-                    if(sendACK(currentSeq, 1)) {
-                        this.state = State.ESTABLISHED;
-                    }
+    private void ptpOpen() throws IOException {
+        while(this.state == State.LISTEN) {
+            STPSegment received = this.receive();
+            if (!Utils.shouldProcessPacket(flp)) {
+                continue;
+            }
+            logMessage("rcv", System.nanoTime(), received.getType(), received.getSeqNo(), 0);
+            if (received.getType() == STPSegment.SYN) {
+                if(sendACK(received.getSeqNo(), 1)) {
+                    this.state = State.ESTABLISHED;
                 }
-                // connection reset
-                if(this.state != State.ESTABLISHED && currentType == STPSegment.RESET) {
-                    this.state = State.CLOSED;
-                }
-                // connection is established
-                if(this.state == State.ESTABLISHED) {
-                    // handle file
-                    handleFile(currentSeq, currentType, currentReceived, fos);
-
-                    if (currentType == STPSegment.FIN) {
-
-                        this.state = State.TIME_WAIT;
-
-                        sendACK(currentSeq, 1);
-                        this.log.append(String.format("%d\t%d\t%d\t%d\t%d%n",
-                                this.receivedDataBytesCounter, this.receivedDataSegmentCounter,
-                                this.duplicateSegmentCounter, this.droppedDataSegmentCounter,
-                                this.droppedACKCounter));
-
-                    }
-                }
-            } else {
-                // drop
-                if (currentType == STPSegment.DATA) {
-                    this.droppedDataSegmentCounter++;
-                }
+            }
+            if (received.getType() == STPSegment.RESET) {
+                this.state = State.CLOSED;
             }
         }
     }
+    public STPSegment receive() throws IOException {
+        byte[] buffer = new byte[BUFFERSIZE];
+        DatagramPacket incomingPacket = new DatagramPacket(buffer, buffer.length);
 
+        this.receiverSocket.receive(incomingPacket);
+        this.senderAddress = incomingPacket.getAddress();
+        byte[] realData = Arrays.copyOfRange(incomingPacket.getData(), 0, incomingPacket.getLength());
+        STPSegment incomingSegment = STPSegment.fromBytes(realData, incomingPacket.getLength());
+        return incomingSegment;
+    }
     private void handleFile(int currentSeq, int currentType, byte[] currentReceived, FileOutputStream fos) throws IOException {
         if (currentType == STPSegment.DATA) {
             this.receivedDataSegmentCounter++;
