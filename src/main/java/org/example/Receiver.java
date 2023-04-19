@@ -18,15 +18,22 @@ package org.example; /**
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static java.util.Comparator.comparingInt;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toCollection;
 
 
 public class Receiver {
@@ -66,7 +73,7 @@ public class Receiver {
     private final DatagramSocket receiverSocket;
 
     // my data
-    private int max_win;
+    private List<STPSegment> receiveWindow;
 
     private InetAddress senderAddress;
 
@@ -83,6 +90,7 @@ public class Receiver {
         // define socket for the server side and bind address
         Logger.getLogger(Receiver.class.getName()).log(Level.INFO, "The sender is using the address " + serverAddress + " to receive message!");
         this.receiverSocket = new DatagramSocket(receiverPort, serverAddress);
+        this.receiveWindow = new ArrayList<>();
 
         this.state = State.LISTEN;
     }
@@ -107,21 +115,30 @@ public class Receiver {
         ptpReceiveData();
         if (this.state == State.TIME_WAIT) {
             // 2 * life
+//            Thread.sleep(2000);
+            ptpClose();
         }
-        ptpClose();
     }
 
-    private void ptpClose() {
+    private void ptpClose() throws IOException {
         // write log
         this.log.append(String.format("%d\t%d\t%d\t%d\t%d%n",
                 this.receivedDataBytesCounter, this.receivedDataSegmentCounter,
                 this.duplicateSegmentCounter, this.droppedDataSegmentCounter,
                 this.droppedACKCounter));
         this.receiverSocket.close();
+
+        FileOutputStream fos = new FileOutputStream(this.filename);
+        List<STPSegment> uniqueList = this.receiveWindow.stream()
+                .collect(collectingAndThen(toCollection(() -> new TreeSet<>(comparingInt(STPSegment::getSeqNo))),
+                        ArrayList::new));
+        for (STPSegment segment : uniqueList) {
+            fos.write(segment.getPayload());
+        }
+        fos.close();
     }
 
     private void ptpReceiveData() throws IOException {
-        FileOutputStream fos = new FileOutputStream(this.filename);
         while(this.state == State.ESTABLISHED) {
             STPSegment received = this.receive();
             if (!Utils.shouldProcessPacket(flp)) {
@@ -135,8 +152,7 @@ public class Receiver {
             if (currentType == STPSegment.DATA) {
                 this.receivedDataSegmentCounter++;
                 this.receivedDataBytesCounter += ArrayUtils.getLength(currentReceived);
-                fos.write(currentReceived);
-                fos.flush();
+                this.receiveWindow.add(received);
                 sendACK(currentSeq, ArrayUtils.getLength(currentReceived));
             }
             if (currentType == STPSegment.FIN) {
@@ -144,7 +160,6 @@ public class Receiver {
                 sendACK(currentSeq, 1);
             }
         }
-        fos.close();
     }
 
     private void ptpOpen() throws IOException {
@@ -210,7 +225,8 @@ public class Receiver {
 
     public static void main(String[] args) throws IOException {
         Logger.getLogger(Receiver.class.getName()).log(Level.INFO, "Starting Receiver...");
-        args = new String[]{"8888", "7777", "FileReceived.txt", "0", "0"};
+//        56007 59606 FileToReceive.txt 0 0
+        args = new String[]{"8888", "7777", "FileReceived.txt", "1", "1"};
         if (args.length != 5) {
             System.err.println("\n===== Error usage, java Receiver <receiver_port> <sender_port> <FileReceived.txt> <flp> <rlp> =====\n");
             return;
