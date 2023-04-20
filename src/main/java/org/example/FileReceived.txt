@@ -135,13 +135,3 @@ Once the entire file has been transmitted reliably and the connection is closed,
 • Number of Retransmitted Data Segments
 
 • Number of Duplicate Acknowledgements received
-
-excluding的部分直接减去就好了，所以只需要统计retransmission和总数据。
-
-# window
-
-To manage your protocol, you will need a collection of state variables to help you keep track of things like state transitions, sliding windows and buffers. In TCP, this data structure is referred to as a control block: it's probably a good idea to create a control block class of your own and have a member variable of this type in your primary class. While we do not mandate the specifics, it is critical that you invest some time into thinking about the design of your data structures. You should be particularly careful about how multiple threads will interact with the various data structures.
-
-
-
-3. The receiver should initialise a receive window to store all received data. You may initialise it to be a large value (e.g., 16KB). It should be large enough to hold all the data that the sender can send in a pipelined manner (i.e., max_win). We will not use very large values for max_win in our tests.

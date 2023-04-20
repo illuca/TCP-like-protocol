@@ -1,5 +1,7 @@
 package org.example;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
@@ -13,8 +15,8 @@ class STPSegment {
     private int type;
     private int seqNo;
     private int expectedACK;
-    private long sendTime;
-    private long expectedACKTime;
+    private double sendTime;
+    private double ackTime;
     private byte[] payload;
 
     public STPSegment(int type, int seqNo, byte[] payload) {
@@ -22,13 +24,13 @@ class STPSegment {
         this.seqNo = seqNo & 0xFFFF; // Ensure the value is in the range 0-65535
         this.payload = payload;
     }
-    public STPSegment(int type, int seqNo, int expectedACK, byte[] payload, long sendTime, long expectedACKTime) {
+    public STPSegment(int type, int seqNo, int expectedACK, byte[] payload, double sendTime, double ackTime) {
         this.type = type;
         this.seqNo = seqNo & 0xFFFF;
         this.expectedACK = expectedACK;
         this.payload = payload;
         this.sendTime = sendTime;
-        this.expectedACKTime = expectedACKTime;
+        this.ackTime = ackTime;
     }
 
     public byte[] toBytes() {
@@ -62,20 +64,20 @@ class STPSegment {
         this.expectedACK = expectedACK;
     }
 
-    public long getSendTime() {
+    public double getSendTime() {
         return sendTime;
     }
 
-    public void setSendTime(long sendTime) {
+    public void setSendTime(double sendTime) {
         this.sendTime = sendTime;
     }
 
-    public long getExpectedACKTime() {
-        return expectedACKTime;
+    public double getAckTime() {
+        return ackTime;
     }
 
-    public void setExpectedACKTime(long expectedACKTime) {
-        this.expectedACKTime = expectedACKTime;
+    public void setACKTime(double expectedACKTime) {
+        this.ackTime = expectedACKTime;
     }
 
     public static STPSegment fromBytes(byte[] bytes, int totalLength) {
@@ -88,6 +90,10 @@ class STPSegment {
         return new STPSegment(type, seqno, payload);
     }
 
+    public int getPayloadLength() {
+        return ArrayUtils.getLength(this.getPayload());
+    }
+
     @Override
     public String toString() {
         return "STPSegment{" +
@@ -95,7 +101,7 @@ class STPSegment {
                 ", seqNo=" + seqNo +
                 ", expectedACK=" + expectedACK +
                 ", sendTime=" + sendTime +
-                ", expectedACKTime=" + expectedACKTime +
+                ", ackTime=" + ackTime +
                 ", payload=" + Arrays.toString(payload) +
                 '}';
     }

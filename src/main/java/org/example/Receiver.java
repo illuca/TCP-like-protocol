@@ -18,7 +18,6 @@ package org.example; /**
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -85,6 +84,7 @@ public class Receiver {
         this.rlp = rlp;
         this.log = new StringBuffer();
         this.serverAddress = InetAddress.getByName(address);
+        this.startTime = System.nanoTime();
 
         // init the UDP socket
         // define socket for the server side and bind address
@@ -99,7 +99,8 @@ public class Receiver {
         STPSegment stp = new STPSegment(type, sequenceNumber,null);
         byte[] data = stp.toBytes();
         DatagramPacket packet = new DatagramPacket(data, data.length, senderAddress, this.senderPort);
-        if(Utils.shouldSendPacket(this.rlp)) {
+        if (Utils.shouldSendPacket(this.rlp) ||
+                type == STPSegment.RESET) {
             this.receiverSocket.send(packet);
             logMessage("snd", System.nanoTime(), type, sequenceNumber, 0);
             return true;
@@ -141,13 +142,13 @@ public class Receiver {
     private void ptpReceiveData() throws IOException {
         while(this.state == State.ESTABLISHED) {
             STPSegment received = this.receive();
-            if (!Utils.shouldProcessPacket(flp)) {
-                this.droppedDataSegmentCounter++;
-                continue;
-            }
             int currentSeq = received.getSeqNo();
             int currentType = received.getType();
             byte[] currentReceived = received.getPayload();
+            if (!Utils.shouldProcessPacket(flp, currentType)) {
+                this.droppedDataSegmentCounter++;
+                continue;
+            }
 
             if (currentType == STPSegment.DATA) {
                 this.receivedDataSegmentCounter++;
@@ -159,22 +160,27 @@ public class Receiver {
                 this.state = State.TIME_WAIT;
                 sendACK(currentSeq, 1);
             }
+            if (currentType == STPSegment.RESET) {
+                logMessage("rcv", System.nanoTime(), currentType, currentSeq, 0);
+                this.state = State.CLOSED;
+            }
         }
     }
 
     private void ptpOpen() throws IOException {
         while(this.state == State.LISTEN) {
-            STPSegment received = this.receive();
-            if (!Utils.shouldProcessPacket(flp)) {
+            STPSegment stp = this.receive();
+            if (!Utils.shouldProcessPacket(flp, stp.getType())) {
                 continue;
             }
-            logMessage("rcv", System.nanoTime(), received.getType(), received.getSeqNo(), 0);
-            if (received.getType() == STPSegment.SYN) {
-                if(sendACK(received.getSeqNo(), 1)) {
+            logMessage("rcv", System.nanoTime(), stp.getType(), stp.getSeqNo(), 0);
+            if (stp.getType() == STPSegment.SYN) {
+                if(sendACK(stp.getSeqNo(), 1)) {
                     this.state = State.ESTABLISHED;
                 }
             }
-            if (received.getType() == STPSegment.RESET) {
+            if (stp.getType() == STPSegment.RESET) {
+                logMessage("rcv", System.nanoTime(), stp.getType(), 0, 0);
                 this.state = State.CLOSED;
             }
         }
@@ -226,7 +232,7 @@ public class Receiver {
     public static void main(String[] args) throws IOException {
         Logger.getLogger(Receiver.class.getName()).log(Level.INFO, "Starting Receiver...");
 //        56007 59606 FileToReceive.txt 0 0
-        args = new String[]{"8888", "7777", "FileReceived.txt", "1", "1"};
+        args = new String[]{"8888", "7777", "FileReceived.txt", "0.5", "0"}; // flp rlp
         if (args.length != 5) {
             System.err.println("\n===== Error usage, java Receiver <receiver_port> <sender_port> <FileReceived.txt> <flp> <rlp> =====\n");
             return;
