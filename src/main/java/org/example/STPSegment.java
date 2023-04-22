@@ -1,11 +1,9 @@
 package org.example;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-class STPSegment {
+public class STPSegment {
     public static final int DATA = 0;
     public static final int ACK = 1;
     public static final int SYN = 2;
@@ -91,7 +89,7 @@ class STPSegment {
     }
 
     public int getPayloadLength() {
-        return ArrayUtils.getLength(this.getPayload());
+        return Utils.getLength(this.getPayload());
     }
 
     @Override
