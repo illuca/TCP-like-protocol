@@ -99,9 +99,7 @@ public class STPSegment {
                 ", seqNo=" + seqNo +
                 ", expectedACK=" + expectedACK +
                 ", sendTime=" + sendTime +
-                ", ackTime=" + ackTime +
-                ", payload=" + Arrays.toString(payload) +
-                '}';
+                ", ackTime=" + ackTime;
     }
 
     // Getters and setters for type, seqno, and payload

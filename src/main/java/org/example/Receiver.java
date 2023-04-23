@@ -1,21 +1,4 @@
-package org.example; /**
- * Sample code for Receiver
- * Java
- * Usage:
- * - You need to compile it first: javac Receiver.java
- * - then run it: java Receiver receiver_port sender_port FileReceived.txt flp rlp
- * coding: utf-8
- * <p>
- * Notes:
- * Try to run the server first with the command:
- * java Receiver 10000 9000 FileReceived.txt 1 1
- * Then run the sender:
- * java Sender 9000 10000 FileToReceived.txt 1000 1
- * <p>
- * Author: Wei Song (Tutor for COMP3331/9331)
- */
-
-
+package org.example;
 
 
 import java.io.FileOutputStream;
@@ -35,7 +18,9 @@ import static java.util.Comparator.comparingInt;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toCollection;
 
-
+/**
+ * The server will be able to receive the file from the sender via UDP
+ */
 public class Receiver {
     enum State {
         CLOSED,
@@ -43,47 +28,38 @@ public class Receiver {
         ESTABLISHED,
         TIME_WAIT,
     }
-
-    /**
-     * The server will be able to receive the file from the sender via UDP
-     * :param receiver_port: the UDP port number to be used by the receiver to receive PTP segments from the sender.
-     * :param sender_port: the UDP port number to be used by the sender to send PTP segments to the receiver.
-     * :param filename: the name of the text file into which the text sent by the sender should be stored
-     * :param flp: forward loss probability, which is the probability that any segment in the forward direction (Data, FIN, SYN) is lost.
-     * :param rlp: reverse loss probability, which is the probability of a segment in the reverse direction (i.e., ACKs) being lost.
-     */
-
     private static final int BUFFERSIZE = 1024;
-    private final String address = "127.0.0.1"; // change it to 0.0.0.0 or public ipv4 address if want to test it between different computers
+    // change it to 0.0.0.0 or public ipv4 address if want to test it between different computers
+    private final String address = "127.0.0.1";
+    // receiver_port: the UDP port number to be used by the receiver to receive PTP segments from the sender.
     private final int receiverPort;
     private State state;
     private final Lock stpLock = new ReentrantLock();
     private final Condition receivedCondition = stpLock.newCondition();
     private STPSegment stp;
-    private Set<Integer> dataSeqSet;
-
     private StringBuffer log;
+    // the UDP port number to be used by the sender to send PTP segments to the receiver.
     private final int senderPort;
+    // the name of the text file into which the text sent by the sender should be stored
     private final String filename;
+    // forward loss probability, which is the probability that any segment in the forward direction (Data, FIN, SYN) is lost.
     private final float flp;
+    // reverse loss probability, which is the probability of a segment in the reverse direction (i.e., ACKs) being lost.
     private final float rlp;
 
     private long startTime;
     private final InetAddress serverAddress;
     private int receivedDataBytesCounter = 0;
     private int receivedDataSegmentCounter = 0;
-    private int duplicateSegmentCounter = 0;
+    private int duplicateDataSegmentsCounter = 0;
     private int droppedDataSegmentCounter = 0;
     private int droppedACKCounter = 0;
-
     private final DatagramSocket receiverSocket;
-
-    // my data
-    private List<STPSegment> receiveWindow;
+    private List<STPSegment> receivedTotal;
+    // check duplicate and act as a linked list
+    private HashMap<Integer, STPSegment> buffer;
     private Thread FINThread;
-
     private int expectedSeq;
-
     private InetAddress senderAddress;
 
     public Receiver(int receiverPort, int senderPort, String filename, float flp, float rlp) throws IOException {
@@ -95,17 +71,10 @@ public class Receiver {
         this.log = new StringBuffer();
         this.serverAddress = InetAddress.getByName(address);
         this.startTime = System.nanoTime();
-        this.dataSeqSet = new HashSet<>();
-
-        // init the UDP socket
-        // define socket for the server side and bind address
-        Logger.getLogger(Receiver.class.getName()).log(Level.INFO, "The sender is using the address " + serverAddress + " to receive message!");
         this.receiverSocket = new DatagramSocket(receiverPort, serverAddress);
-        this.receiveWindow = new ArrayList<>();
-
+        this.receivedTotal = new ArrayList<>();
+        this.buffer = new HashMap<>();
         this.state = State.LISTEN;
-
-
     }
 
     private boolean sendFlagPacketInRlp(int type, int sequenceNumber, InetAddress senderAddress) throws IOException {
@@ -118,8 +87,8 @@ public class Receiver {
             this.receiverSocket.send(packet);
             return true;
         } else {
+            // drop by rlp
             logMessage("rdrp", System.nanoTime(), type, sequenceNumber, 0);
-            this.droppedACKCounter++;
             return false;
         }
     }
@@ -128,6 +97,7 @@ public class Receiver {
         while (this.state == State.LISTEN) {
             STPSegment stp = this.receive();
             if (Utils.dropPacket(flp, stp.getType())) {
+                // drop by flp
                 logMessage("fdrp", System.nanoTime(), stp.getType(), stp.getSeqNo(), 0);
                 continue;
             }
@@ -136,7 +106,7 @@ public class Receiver {
                 while (!sendACKInRlp(stp.getSeqNo(), 1)) {
 
                 }
-                this.expectedSeq = stp.getSeqNo() + 1;
+                this.expectedSeq = Utils.seq(stp.getSeqNo() + 1);
                 this.state = State.ESTABLISHED;
             }
             if (stp.getType() == STPSegment.RESET) {
@@ -150,42 +120,21 @@ public class Receiver {
             STPSegment received = this.receive();
             int currentSeq = received.getSeqNo();
             int currentType = received.getType();
-            byte[] currentReceived = received.getPayload();
-            if (currentType == STPSegment.DATA) {
-                if (dataSeqSet.contains(currentSeq)) {
-                    this.duplicateSegmentCounter++;
-                } else {
-                    this.receivedDataSegmentCounter++;
-                    this.receivedDataBytesCounter += Utils.getLength(currentReceived);
-                    this.dataSeqSet.add(currentSeq);
-                }
-            }
-
             if (Utils.dropPacket(flp, currentType)) {
-                logMessage("fdrp", System.nanoTime(), currentType, currentSeq, Utils.getLength(currentReceived));
-                this.droppedDataSegmentCounter++;
+                // drop by flp
+                logMessage("fdrp", System.nanoTime(), currentType, currentSeq, received.getPayloadLength());
                 continue;
             }
-
-
             if (currentType == STPSegment.DATA) {
-                if (this.expectedSeq == currentSeq && currentSeq != 4722) {
-                    this.receiveWindow.add(received);
-                    logMessage("rcv", System.nanoTime(), currentType, currentSeq, Utils.getLength(currentReceived));
-                    sendACKInRlp(currentSeq, Utils.getLength(currentReceived));
-                } else {
-                    logMessage("drp", System.nanoTime(), currentType, currentSeq, Utils.getLength(currentReceived));
-                    sendACKInRlp(this.expectedSeq, 0);
-                }
+                handleDataSegment(received);
             }
             if (currentType == STPSegment.FIN) {
-                logMessage("rcv", System.nanoTime(), currentType, currentSeq, Utils.getLength(currentReceived));
+                logMessage("rcv", System.nanoTime(), currentType, currentSeq, received.getPayloadLength());
                 this.state = State.TIME_WAIT;
                 sendACKInRlp(currentSeq, 1);
                 break;
             }
             if (currentType == STPSegment.RESET) {
-                logMessage("rcv", System.nanoTime(), currentType, currentSeq, Utils.getLength(currentReceived));
                 logMessage("rcv", System.nanoTime(), currentType, currentSeq, 0);
                 this.state = State.CLOSED;
                 break;
@@ -221,6 +170,7 @@ public class Receiver {
             }
             if (received) {
                 if (Utils.dropPacket(flp, stp.getType())) {
+                    // drop by flp
                     logMessage("fdrp", System.nanoTime(), stp.getType(), stp.getSeqNo(), Utils.getLength(stp.getPayload()));
                     continue;
                 }
@@ -241,6 +191,37 @@ public class Receiver {
         }
     }
 
+    private void handleDataSegment(STPSegment received) throws IOException {
+        int currentSeq = received.getSeqNo();
+        int currentType = received.getType();
+        if (this.expectedSeq == currentSeq) {
+            this.receivedTotal.add(received);
+            this.buffer.put(currentSeq, received);
+            logMessage("rcv", System.nanoTime(), currentType, currentSeq, received.getPayloadLength());
+            this.expectedSeq = Utils.seq(currentSeq + received.getPayloadLength());
+            if (!this.buffer.isEmpty()) {
+                List<STPSegment> list = new ArrayList<>();
+                STPSegment stp;
+                while ((stp = buffer.get(this.expectedSeq)) != null) {
+                    this.expectedSeq = Utils.seq(this.expectedSeq + stp.getPayloadLength());
+                    list.add(stp);
+                }
+                this.receivedTotal.addAll(list);
+            }
+            sendACKInRlp(this.expectedSeq, 0);
+        } else {
+            if (this.buffer.get(currentSeq) == null) {
+                this.buffer.put(currentSeq, received);
+                logMessage("rcv", System.nanoTime(), currentType, currentSeq, received.getPayloadLength());
+            } else {
+                this.duplicateDataSegmentsCounter++;
+                // drop due to duplicate
+                logMessage("drp", System.nanoTime(), currentType, currentSeq, received.getPayloadLength());
+            }
+            sendACKInRlp(this.expectedSeq, 0);
+        }
+    }
+
     private void ptpClose() throws IOException {
         // write log
         this.log.append(String.format("Amount of (original) Data Received (in bytes): %d\n" +
@@ -249,11 +230,11 @@ public class Receiver {
                         "Number of Data segments dropped: %d\n" +
                         "Number of ACK segments dropped: %d%n",
                 this.receivedDataBytesCounter, this.receivedDataSegmentCounter,
-                this.duplicateSegmentCounter, this.droppedDataSegmentCounter,
+                this.duplicateDataSegmentsCounter, this.droppedDataSegmentCounter,
                 this.droppedACKCounter));
 
         FileOutputStream fos = new FileOutputStream(this.filename);
-        List<STPSegment> uniqueList = this.receiveWindow.stream()
+        List<STPSegment> uniqueList = this.receivedTotal.stream()
                 .collect(collectingAndThen(toCollection(() -> new TreeSet<>(comparingInt(STPSegment::getSeqNo))),
                         ArrayList::new));
         for (STPSegment segment : uniqueList) {
@@ -304,16 +285,32 @@ public class Receiver {
         } else {
             durationString = Utils.durationString(currentTime, this.startTime);
         }
+        if (type == STPSegment.ACK) {
+            if (action.contains("drp")) {
+                this.droppedACKCounter++;
+            }
+        }
+        if (type == STPSegment.DATA) {
+            if (action.contains("rcv")) {
+                this.receivedDataSegmentCounter++;
+                this.receivedDataBytesCounter += numberOfBytes;
+            }
+            if (action.contains("drp")) {
+                this.droppedDataSegmentCounter++;
+            }
+        }
 
-        newLog = String.format("%4s\t%10s\t%10s\t%5d\t%d%n", action, durationString, packetType, sequence, numberOfBytes);
+        newLog = String.format("%4s\t%10s\t%6s\t%5d\t%d%n", action, durationString, packetType, sequence, numberOfBytes);
         System.out.print(newLog);
         this.log.append(newLog);
     }
 
     public static void main(String[] args) throws IOException {
         Logger.getLogger(Receiver.class.getName()).log(Level.INFO, "Starting Receiver...");
-//        56007 59606 FileToReceive.txt 0 0
-        args = new String[]{"8888", "7777", "FileReceived.txt", "0.5", "0.5"}; // flp rlp
+        if (args.length == 0) {
+            System.out.println("Args are empty. Use default configuration.");
+            args = new String[]{"8888", "7777", "FileReceived.txt", "0.5", "0"}; // flp rlp
+        }
         if (args.length != 5) {
             System.err.println("\n===== Error usage, java Receiver <receiver_port> <sender_port> <FileReceived.txt> <flp> <rlp> =====\n");
             return;

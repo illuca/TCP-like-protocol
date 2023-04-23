@@ -1,19 +1,5 @@
-package org.example; /**
- * Sample code for Receiver
- * Python 3
- * Usage:
- * - You need to compile it first: javac Sender.java
- * - then run it: java Sender 9000 10000 FileToReceived.txt 1000 1
- * coding: utf-8
- * <p>
- * Notes:
- * Try to run the server first with the command:
- * java Receiver 10000 9000 FileReceived.txt 1 1
- * Then run the sender:
- * java Sender 9000 10000 FileToReceived.txt 1000 1
- * <p>
- * Author: Wei Song (Tutor for COMP3331/9331)
- */
+package org.example;
+
 
 import java.net.*;
 import java.io.*;
@@ -22,10 +8,12 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
-import java.util.logging.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 
+/**
+ * The Sender will be able to connect the Receiver via UDP
+ */
 public class Sender {
 
     enum State {
@@ -35,20 +23,11 @@ public class Sender {
         CLOSING,
         FIN_WAIT,
     }
-
-    /**
-     * The Sender will be able to connect the Receiver via UDP
-     * :param sender_port: the UDP port number to be used by the sender to send PTP segments to the receiver
-     * :param receiver_port: the UDP port number on which receiver is expecting to receive PTP segments from the sender
-     * :param filename: the name of the text file that must be transferred from sender to receiver using your reliable transport protocol.
-     * :param max_win: the maximum window size in bytes for the sender window.
-     * :param rot: the value of the retransmission timer in milliseconds. This should be an unsigned integer.
-     */
-
+    // the UDP port number to be used by the sender to send PTP segments to the receiver
     private final int senderPort;
+    // the UDP port number on which receiver is expecting to receive PTP segments from the sender
     private final int receiverPort;
     private final InetAddress senderAddress;
-
     private int ISN;
     private int lastDataSequence;
     private final InetAddress receiverAddress;
@@ -56,12 +35,18 @@ public class Sender {
     private final Lock socketLock = new ReentrantLock();
     private final StringBuffer log;
     private State state = State.CLOSED;
+    // the name of the text file that must be transferred from sender to receiver using your reliable transport protocol.
     private final String filename;
-    // must >= 1000. and should be n * 1000
+    // the maximum window size in bytes for the sender window.
+    // must greater or equal to 1000 and should be n * 1000
     private final int maxWin;
+    // the value of the retransmission timer in milliseconds. This should be an unsigned integer.
     private final int rto;
     private final BlockingQueue<STPSegment> unAcked;
     private Set<Integer> sent;
+    private AtomicBoolean duplicateACKFlag = new AtomicBoolean(false);
+    private AtomicBoolean interrupt = new AtomicBoolean(false);
+    private Map<Integer, Integer> duplicateACKs = new ConcurrentHashMap<>();
 
     private long startTime = 0;
 
@@ -76,6 +61,7 @@ public class Sender {
     private final Condition ackReceivedCondition = ackLock.newCondition();
     private Thread receiveThread;
     private Thread sendFileThread;
+    private Random random = new Random();
     private final Condition stateCondition = stateLock.newCondition();
 
 
@@ -91,10 +77,7 @@ public class Sender {
         this.rto = rto;
         this.log = new StringBuffer();
         this.unAcked = new LinkedBlockingQueue<>(maxWin / MSS);
-        this.sent = ConcurrentHashMap.newKeySet();
-//        this.receiveThread = new Thread(this::listen);
-        // init the UDP socket
-        Logger.getLogger(Sender.class.getName()).log(Level.INFO, "The sender is using the address {0}:{1}", new Object[]{senderAddress, senderPort});
+        this.sent = new ConcurrentSkipListSet<>();
         this.senderSocket = new DatagramSocket(senderPort, senderAddress);
 
         this.receiveThread = new Thread(() -> {
@@ -137,19 +120,16 @@ public class Sender {
         while (this.state == State.SYN_SENT && counter < 3) {
             try {
                 ackLock.lock();
-                Random random = new Random();
-//                this.ISN = random.nextInt(65536);
-                this.ISN = 4721;
+//                this.ISN = this.random.nextInt(65536);
+                this.ISN = 999;
                 sendFlagPacket(STPSegment.SYN, this.ISN);
                 boolean ackReceived = ackReceivedCondition.await(this.rto, TimeUnit.MILLISECONDS);
                 if (ackReceived) {
                     STPSegment ackSegment = STPSegment.fromBytes(this.ack.getData(), this.ack.getLength());
                     if (ackSegment.getType() == STPSegment.ACK && ackSegment.getSeqNo() == Utils.seq(this.ISN + 1)) {
                         setState(State.ESTABLISHED);
-                        Logger.getLogger(Sender.class.getName()).log(Level.INFO, "Handshake succeed.");
                         break;
                     } else {
-                        Logger.getLogger(Sender.class.getName()).log(Level.INFO, "Closed failed.");
                     }
                 } else {
                     counter++;
@@ -169,6 +149,10 @@ public class Sender {
         this.sendFileThread.start();
         int bytesRead = 0;
         byte[] buffer = new byte[this.MSS];
+        if (!new File(this.filename).exists()) {
+            System.out.println(this.filename + " does not exist.");
+            return;
+        }
         FileInputStream fis = new FileInputStream(this.filename);
         int seq = Utils.seq(this.ISN + 1);
 
@@ -197,61 +181,58 @@ public class Sender {
         for (STPSegment stp : this.unAcked) {
             byte[] data = stp.toBytes();
             DatagramPacket packet = new DatagramPacket(data, data.length, this.receiverAddress, this.receiverPort);
-            if (!this.sent.contains(stp.getSeqNo()) || Utils.isTimeout(stp, this.startTime)) {
+            if (!this.sent.contains(stp.getSeqNo()) || Utils.isTimeout(stp, this.startTime) || this.duplicateACKFlag.get()) {
                 double sendTime = Utils.duration(System.nanoTime(), this.startTime);
                 stp.setSendTime(sendTime);
                 stp.setACKTime(sendTime + rto);
                 if (this.sent.contains(stp.getSeqNo())) {
                     this.retransmittedDataSegmentsCounter++;
-                } else {
-                    this.segmentSentCounter++;
-                    this.bytesSentCounter += stp.getPayloadLength();
                 }
-                logMessage("snd", stp.getSendTime(), STPSegment.DATA, stp.getSeqNo(), stp.getPayloadLength());
                 try {
                     this.senderSocket.send(packet);
+                    this.sent.add(stp.getSeqNo());
+                    logMessage("snd", stp.getSendTime(), STPSegment.DATA, stp.getSeqNo(), stp.getPayloadLength());
+                    if (this.interrupt.get()) {
+                        this.interrupt.set(false);
+                        break;
+                    }
                 } catch (IOException ignore) {
                 }
-                this.sent.add(stp.getSeqNo());
             }
         }
     }
 
     public void ptpClose() {
-//        When the sending application (sitting above STP) is finished generating data,
-//        it issues a "close" operation to STP. This causes the sender to enter the CLOSING state.
-//        At this point, the sender must still ensure that any buffered data arrives at the receiver reliably.
+        // When the sending application (sitting above STP) is finished generating data,
+        // it issues a "close" operation to STP. This causes the sender to enter the CLOSING state.
+        // At this point, the sender must still ensure that any buffered data arrives at the receiver reliably.
         setState(State.CLOSING);
-
-        while (this.unAcked.size() != 0) {}
-
+        while (this.unAcked.size() != 0) {
+        }
+        sendFlagPacket(STPSegment.FIN, this.lastDataSequence);
         setState(State.FIN_WAIT);
-
         int counter = 0;
-        while (this.state == State.FIN_WAIT && counter < 3) {
+        while (this.state == State.FIN_WAIT && counter < 2) {
             try {
                 ackLock.lock();
-                sendFlagPacket(STPSegment.FIN, this.lastDataSequence);
                 boolean ackReceived = ackReceivedCondition.await(this.rto, TimeUnit.MILLISECONDS);
                 if (ackReceived) {
                     STPSegment segment = STPSegment.fromBytes(this.ack.getData(), this.ack.getLength());
                     if (segment.getType() == STPSegment.ACK && segment.getSeqNo() == Utils.seq(this.lastDataSequence + 1)) {
                         setState(State.CLOSED);
-                        printLog("Closed succeed.");
                         break;
                     } else {
-                        printLog("Closed failed.");
                     }
                 } else {
+                    sendFlagPacket(STPSegment.FIN, this.lastDataSequence);
                     counter++;
-                    this.retransmittedDataSegmentsCounter++;
                 }
             } catch (InterruptedException e) {
             } finally {
                 ackLock.unlock();
             }
         }
-        if (this.state == State.FIN_WAIT && counter == 3) {
+        if (this.state == State.FIN_WAIT && counter == 2) {
             sendFlagPacket(STPSegment.RESET, 0);
             this.doCloseConnection();
         }
@@ -260,12 +241,15 @@ public class Sender {
         }
     }
 
-    public void printLog(String message) {
-        Logger.getLogger(Sender.class.getName()).log(Level.INFO, message);
-    }
 
     private void doCloseConnection() {
         try {
+            if (this.receiveThread.isAlive()) {
+                this.receiveThread.stop();
+            }
+            if (this.sendFileThread.isAlive()) {
+                this.receiveThread.stop();
+            }
             socketLock.lock();
             this.senderSocket.close();
         } finally {
@@ -275,6 +259,9 @@ public class Sender {
     }
 
     public void setState(State state) {
+        if (this.state == state) {
+            return;
+        }
         try {
             stateLock.lock();
             this.state = state;
@@ -308,25 +295,25 @@ public class Sender {
         }
         System.out.print(newLog);
         this.log.append(newLog);
-        this.bytesSentCounter += numberOfBytes;
-        if (type == STPSegment.DATA) {
-            this.segmentSentCounter++;
-        }
     }
 
-    public void removeBeforeAndIncluding(int x) {
-        synchronized (this.unAcked) {
-            AtomicBoolean found = new AtomicBoolean(false);
-            this.unAcked.removeIf(segment -> {
-                if (!found.get()) {
-                    if (segment.getExpectedACK() == x) {
-                        found.set(true);
-                    }
-                    return true;
-                }
-                return false;
-            });
+    public int removeBeforeAndIncluding(int x) {
+        int foundSeqNo = -1;
+        Set<STPSegment> set = new HashSet<>();
+
+        for (STPSegment segment : this.unAcked) {
+            set.add(segment);
+            if (segment.getExpectedACK() == x) {
+                foundSeqNo = segment.getSeqNo();
+                break;
+            }
         }
+        if (foundSeqNo != -1) {
+            this.unAcked.removeAll(set);
+            this.segmentSentCounter += set.size();
+            this.bytesSentCounter += set.stream().mapToInt(STPSegment::getPayloadLength).sum();
+        }
+        return foundSeqNo;
     }
 
     public void receiveACK() {
@@ -350,16 +337,31 @@ public class Sender {
         // for sending data and receive data
         if (this.state == State.ESTABLISHED || this.state == State.CLOSING) {
             logMessage("rcv", Utils.duration(System.nanoTime(), this.startTime), ackSegment.getType(), ackSegment.getSeqNo(), 0);
-            removeBeforeAndIncluding(ackSegment.getSeqNo());
+            int removedSeq = removeBeforeAndIncluding(ackSegment.getSeqNo());
+            if (removedSeq != -1) {
+                if (this.duplicateACKs.getOrDefault(removedSeq, 0) >= 3) {
+                    // delete duplicate ACK whose has received for more than 3 times
+                    this.duplicateACKFlag.set(false);
+                    this.interrupt.set(true);
+                }
+            } else {
+                this.duplicateACKs.merge(ackSegment.getSeqNo(), 1, Integer::sum);
+                if (this.duplicateACKs.getOrDefault(ackSegment.getSeqNo(), 0) >= 3) {
+                    // notify duplicate ACK whose has received for more than 3 times
+                    System.out.println("notify>=3: " + ackSegment.getSeqNo());
+                    this.duplicateACKFlag.set(true);
+                    this.interrupt.set(true);
+                }
+            }
         }
         if (this.state == State.FIN_WAIT) {
             logMessage("rcv", Utils.duration(System.nanoTime(), this.startTime), ackSegment.getType(), ackSegment.getSeqNo(), 0);
-            ackLock.lock();
+            this.ackLock.lock();
             try {
                 this.ack = packet;
                 ackReceivedCondition.signal();
             } finally {
-                ackLock.unlock();
+                this.ackLock.unlock();
             }
         }
     }
@@ -376,6 +378,11 @@ public class Sender {
     }
 
     private void writeLogToFile() {
+        this.duplicatedACKCounter = this.duplicateACKs.values().stream()
+                .filter(value -> value >= 2)
+                .mapToInt(Integer::intValue)
+                .sum();
+
         this.log.append(String.format("Amount of (original) Data Transferred (in bytes): %d\n" +
                         "Number of Data Segments Sent (excluding retransmissions): %d\n" +
                         "Number of Retransmitted Data Segments: %d\n" +
@@ -386,9 +393,10 @@ public class Sender {
     }
 
     public static void main(String[] args) {
-//                59606 56007 test1.txt 1000 rto
-        args = new String[]{"7777", "8888", "FileToSend.txt", "3000", "200"};
-        Logger.getLogger(Sender.class.getName()).setLevel(Level.ALL);
+        if (args.length == 0) {
+            args = new String[]{"7777", "8888", "FileToSend.txt", "7000", "20"};
+            System.out.println("Args are empty. Use default configuration.");
+        }
         if (args.length != 5) {
             System.err.println("\n===== Error usage, java Sender senderPort receiverPort FileReceived.txt maxWin rto ======\n");
             System.exit(0);
@@ -396,6 +404,9 @@ public class Sender {
         try {
             Sender sender = new Sender(Integer.parseInt(args[0]), Integer.parseInt(args[1]), args[2], Integer.parseInt(args[3]), Integer.parseInt(args[4]));
             sender.run();
+            if (sender.receiveThread.isAlive() || sender.sendFileThread.isAlive()) {
+                sender.doCloseConnection();
+            }
         } catch (IOException ignored) {
         }
     }
