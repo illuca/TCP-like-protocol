@@ -1,312 +1,591 @@
  rcv	         0	   SYN	  999	0
- snd	      0.22	   ACK	 1000	0
-fdrp	      3.23	  DATA	 1000	1000
-fdrp	      4.73	  DATA	 2000	1000
- rcv	      5.05	  DATA	 3000	1000
- snd	      5.29	   ACK	 1000	0
-fdrp	      5.52	  DATA	 4000	1000
-fdrp	      5.67	  DATA	 5000	1000
- rcv	      5.77	  DATA	 6000	1000
- snd	      5.86	   ACK	 1000	0
-fdrp	      5.95	  DATA	 7000	1000
- rcv	     23.20	  DATA	 1000	1000
- snd	     23.49	   ACK	 2000	0
-fdrp	     24.30	  DATA	 8000	1000
- rcv	     24.72	  DATA	 2000	1000
- snd	     24.99	   ACK	 4000	0
- drp	     25.29	  DATA	 3000	1000
- snd	     25.48	   ACK	 4000	0
-fdrp	     25.65	  DATA	 4000	1000
- rcv	     25.81	  DATA	 5000	1000
- snd	     25.98	   ACK	 4000	0
-fdrp	     26.17	  DATA	 6000	1000
- rcv	     26.35	  DATA	 7000	1000
- snd	     26.49	   ACK	 4000	0
- rcv	     26.65	  DATA	 9000	1000
- snd	     26.78	   ACK	 4000	0
-fdrp	     26.95	  DATA	10000	1000
-fdrp	     44.83	  DATA	 8000	1000
-fdrp	     45.40	  DATA	 4000	1000
- drp	     45.89	  DATA	 5000	1000
- snd	     46.13	   ACK	 4000	0
- drp	     46.31	  DATA	 6000	1000
- snd	     46.41	   ACK	 4000	0
-fdrp	     46.49	  DATA	 7000	1000
-fdrp	     46.56	  DATA	 9000	1000
-fdrp	     46.63	  DATA	10000	1000
-fdrp	     48.42	  DATA	 6000	1000
-fdrp	     48.51	  DATA	 4000	1000
- rcv	     48.58	  DATA	 4000	1000
- snd	     48.65	   ACK	 8000	0
- drp	     48.73	  DATA	 4000	1000
- snd	     48.79	   ACK	 8000	0
-fdrp	     48.87	  DATA	 5000	1000
- drp	     48.93	  DATA	 6000	1000
- snd	     48.99	   ACK	 8000	0
- drp	     49.06	  DATA	 7000	1000
- snd	     49.12	   ACK	 8000	0
- rcv	     49.19	  DATA	 8000	1000
- snd	     49.25	   ACK	10000	0
- drp	     49.32	  DATA	 9000	1000
- snd	     49.38	   ACK	10000	0
- rcv	     49.44	  DATA	10000	1000
- snd	     49.50	   ACK	11000	0
- drp	     49.58	  DATA	 4000	1000
- snd	     49.64	   ACK	11000	0
- drp	     49.71	  DATA	 5000	1000
- snd	     49.77	   ACK	11000	0
- drp	     49.85	  DATA	 6000	1000
- snd	     49.92	   ACK	11000	0
- drp	     49.99	  DATA	 7000	1000
- snd	     50.05	   ACK	11000	0
- drp	     50.13	  DATA	 8000	1000
- snd	     50.19	   ACK	11000	0
- drp	     50.26	  DATA	 9000	1000
- snd	     50.32	   ACK	11000	0
-fdrp	     50.39	  DATA	10000	1000
-fdrp	     50.46	  DATA	 4000	1000
-fdrp	     50.53	  DATA	 5000	1000
-fdrp	     50.60	  DATA	 6000	1000
-fdrp	     50.66	  DATA	 8000	1000
-fdrp	     50.73	  DATA	 8000	1000
-fdrp	     50.80	  DATA	 9000	1000
- rcv	     50.86	  DATA	11000	1000
- snd	     50.92	   ACK	12000	0
- rcv	     50.99	  DATA	12000	1000
- snd	     51.05	   ACK	13000	0
- rcv	     51.11	  DATA	13000	1000
- snd	     51.17	   ACK	14000	0
- rcv	     51.24	  DATA	14000	1000
- snd	     51.30	   ACK	15000	0
-fdrp	     51.37	  DATA	11000	1000
- rcv	     51.67	  DATA	15000	1000
- snd	     51.95	   ACK	16000	0
-fdrp	     52.19	  DATA	16000	1000
- rcv	     52.37	  DATA	17000	1000
- snd	     52.57	   ACK	16000	0
- rcv	     52.74	  DATA	18000	1000
- snd	     53.05	   ACK	16000	0
-fdrp	     53.24	  DATA	19000	1000
-fdrp	     53.37	  DATA	20000	1000
-fdrp	     53.48	  DATA	21000	1000
- rcv	     53.61	  DATA	22000	1000
- snd	     53.72	   ACK	16000	0
- rcv	     54.69	  DATA	20000	1000
- snd	     54.95	   ACK	16000	0
- rcv	     55.06	  DATA	16000	1000
- snd	     55.12	   ACK	19000	0
- drp	     55.19	  DATA	17000	1000
- snd	     55.24	   ACK	19000	0
-fdrp	     55.31	  DATA	18000	1000
- rcv	     55.37	  DATA	19000	1000
- snd	     55.42	   ACK	21000	0
- drp	     55.49	  DATA	20000	1000
- snd	     55.90	   ACK	21000	0
- rcv	     56.07	  DATA	21000	1000
- snd	     56.64	   ACK	23000	0
- drp	     56.76	  DATA	22000	1000
- snd	     56.82	   ACK	23000	0
-fdrp	     56.88	  DATA	16000	1000
-fdrp	     56.94	  DATA	17000	1000
- drp	     56.99	  DATA	18000	1000
- snd	     57.04	   ACK	23000	0
- drp	     57.10	  DATA	16000	1000
- snd	     57.15	   ACK	23000	0
- drp	     57.21	  DATA	17000	1000
- snd	     57.27	   ACK	23000	0
- drp	     57.33	  DATA	18000	1000
- snd	     57.38	   ACK	23000	0
-fdrp	     57.44	  DATA	19000	1000
-fdrp	     57.50	  DATA	20000	1000
- drp	     57.55	  DATA	21000	1000
- snd	     57.61	   ACK	23000	0
- drp	     57.66	  DATA	22000	1000
- snd	     57.72	   ACK	23000	0
- rcv	     57.79	  DATA	23000	1000
- snd	     57.85	   ACK	24000	0
-fdrp	     57.91	  DATA	24000	1000
-fdrp	     57.97	  DATA	25000	1000
- rcv	     58.03	  DATA	26000	1000
- snd	     58.08	   ACK	24000	0
-fdrp	     58.14	  DATA	27000	1000
- drp	     58.19	  DATA	21000	1000
- snd	     58.23	   ACK	24000	0
-fdrp	     58.29	  DATA	22000	1000
-fdrp	     58.35	  DATA	23000	1000
- rcv	     58.41	  DATA	24000	1000
- snd	     58.45	   ACK	25000	0
-fdrp	     58.51	  DATA	25000	1000
- drp	     58.56	  DATA	26000	1000
- snd	     58.60	   ACK	25000	0
-fdrp	     58.66	  DATA	27000	1000
- rcv	     58.72	  DATA	28000	1000
- snd	     58.85	   ACK	25000	0
- rcv	     58.91	  DATA	29000	1000
- snd	     58.96	   ACK	25000	0
-fdrp	     59.01	  DATA	23000	1000
-fdrp	     59.06	  DATA	23000	1000
- drp	     59.11	  DATA	23000	1000
- snd	     59.15	   ACK	25000	0
-fdrp	     59.21	  DATA	30000	1000
- rcv	     66.50	  DATA	31000	1000
- snd	     67.11	   ACK	25000	0
-fdrp	     67.61	  DATA	26000	1000
-fdrp	     67.79	  DATA	25000	1000
-fdrp	     67.93	  DATA	26000	1000
- rcv	     68.07	  DATA	25000	1000
- snd	     68.28	   ACK	27000	0
-fdrp	     68.42	  DATA	26000	1000
- drp	     68.64	  DATA	25000	1000
- snd	     68.77	   ACK	27000	0
-fdrp	     69.30	  DATA	26000	1000
-fdrp	     69.55	  DATA	27000	1000
-fdrp	     69.64	  DATA	28000	1000
-fdrp	     69.73	  DATA	29000	1000
- rcv	     69.91	  DATA	30000	1000
- snd	     70.04	   ACK	27000	0
- drp	     70.17	  DATA	31000	1000
- snd	     70.26	   ACK	27000	0
- rcv	     70.37	  DATA	32000	293
- snd	     70.47	   ACK	27000	0
-fdrp	     70.62	  DATA	27000	1000
- drp	     70.77	  DATA	28000	1000
- snd	     70.86	   ACK	27000	0
-fdrp	     71.00	  DATA	29000	1000
- drp	     71.32	  DATA	30000	1000
- snd	     71.41	   ACK	27000	0
-fdrp	     71.51	  DATA	31000	1000
-fdrp	     71.60	  DATA	32000	293
- rcv	     72.43	  DATA	27000	1000
- snd	     73.11	   ACK	32293	0
- drp	     73.25	  DATA	28000	1000
- snd	     73.33	   ACK	32293	0
- drp	     73.43	  DATA	29000	1000
- snd	     73.51	   ACK	32293	0
-fdrp	     74.21	  DATA	30000	1000
- drp	     74.34	  DATA	31000	1000
- snd	     74.87	   ACK	32293	0
- drp	     75.07	  DATA	32000	293
- snd	     75.16	   ACK	32293	0
- drp	     75.27	  DATA	27000	1000
- snd	     75.35	   ACK	32293	0
- drp	     75.69	  DATA	28000	1000
- snd	     75.75	   ACK	32293	0
-fdrp	     75.81	  DATA	29000	1000
-fdrp	     75.86	  DATA	30000	1000
-fdrp	     75.91	  DATA	31000	1000
- drp	     75.95	  DATA	32000	293
- snd	     75.99	   ACK	32293	0
- drp	     76.04	  DATA	27000	1000
- snd	     76.10	   ACK	32293	0
- drp	     76.16	  DATA	28000	1000
- snd	     76.20	   ACK	32293	0
- drp	     76.25	  DATA	29000	1000
- snd	     76.30	   ACK	32293	0
-fdrp	     76.35	  DATA	30000	1000
- drp	     76.39	  DATA	31000	1000
- snd	     76.43	   ACK	32293	0
- drp	     76.49	  DATA	32000	293
- snd	     76.52	   ACK	32293	0
- drp	     76.57	  DATA	27000	1000
- snd	     76.61	   ACK	32293	0
-fdrp	     76.66	  DATA	28000	1000
-fdrp	     76.70	  DATA	29000	1000
- drp	     76.74	  DATA	30000	1000
- snd	     76.78	   ACK	32293	0
-fdrp	     76.83	  DATA	31000	1000
- drp	     76.88	  DATA	32000	293
- snd	     76.92	   ACK	32293	0
- drp	     76.97	  DATA	27000	1000
- snd	     77.01	   ACK	32293	0
-fdrp	     77.05	  DATA	28000	1000
-fdrp	     77.10	  DATA	29000	1000
-fdrp	     77.14	  DATA	30000	1000
-fdrp	     77.18	  DATA	31000	1000
-fdrp	     77.23	  DATA	32000	293
- drp	     77.27	  DATA	27000	1000
- snd	     77.30	   ACK	32293	0
- drp	     77.36	  DATA	28000	1000
- snd	     77.39	   ACK	32293	0
- drp	     77.44	  DATA	29000	1000
- snd	     77.48	   ACK	32293	0
- drp	     77.58	  DATA	30000	1000
- snd	     77.61	   ACK	32293	0
- drp	     77.67	  DATA	31000	1000
- snd	     77.71	   ACK	32293	0
-fdrp	     77.75	  DATA	32000	293
- drp	     77.80	  DATA	27000	1000
- snd	     77.83	   ACK	32293	0
- drp	     77.88	  DATA	28000	1000
- snd	     77.92	   ACK	32293	0
-fdrp	     77.97	  DATA	29000	1000
- drp	     78.02	  DATA	30000	1000
- snd	     78.05	   ACK	32293	0
-fdrp	     78.10	  DATA	31000	1000
- drp	     78.15	  DATA	32000	293
- snd	     78.19	   ACK	32293	0
-fdrp	     78.24	  DATA	27000	1000
-fdrp	     78.29	  DATA	28000	1000
-fdrp	     78.33	  DATA	29000	1000
- drp	     78.38	  DATA	30000	1000
- snd	     78.42	   ACK	32293	0
- drp	     78.49	  DATA	31000	1000
- snd	     78.54	   ACK	32293	0
- drp	     78.60	  DATA	32000	293
- snd	     78.65	   ACK	32293	0
- drp	     78.71	  DATA	27000	1000
- snd	     78.77	   ACK	32293	0
- drp	     78.84	  DATA	28000	1000
- snd	     78.88	   ACK	32293	0
- drp	     78.96	  DATA	29000	1000
- snd	     78.99	   ACK	32293	0
- drp	     79.04	  DATA	30000	1000
- snd	     79.09	   ACK	32293	0
-fdrp	     80.17	  DATA	31000	1000
- drp	     80.26	  DATA	32000	293
- snd	     80.30	   ACK	32293	0
-fdrp	     80.35	  DATA	27000	1000
- drp	     80.39	  DATA	28000	1000
- snd	     80.43	   ACK	32293	0
- drp	     80.48	  DATA	29000	1000
- snd	     80.51	   ACK	32293	0
-fdrp	     80.55	  DATA	30000	1000
-fdrp	     80.59	  DATA	31000	1000
-fdrp	     80.63	  DATA	32000	293
- drp	     80.67	  DATA	27000	1000
- snd	     80.70	   ACK	32293	0
- drp	     80.75	  DATA	28000	1000
- snd	     80.79	   ACK	32293	0
-fdrp	     80.83	  DATA	29000	1000
-fdrp	     80.87	  DATA	30000	1000
- drp	     80.91	  DATA	31000	1000
- snd	     80.95	   ACK	32293	0
-fdrp	     80.99	  DATA	32000	293
- drp	     81.03	  DATA	27000	1000
- snd	     81.07	   ACK	32293	0
- drp	     81.12	  DATA	28000	1000
- snd	     81.15	   ACK	32293	0
- drp	     81.20	  DATA	29000	1000
- snd	     81.23	   ACK	32293	0
-fdrp	     81.27	  DATA	32000	293
-fdrp	     81.31	  DATA	32000	293
-fdrp	     81.35	  DATA	30000	1000
-fdrp	     81.39	  DATA	32000	293
- drp	     81.43	  DATA	32000	293
- snd	     81.46	   ACK	32293	0
- drp	     81.51	  DATA	27000	1000
- snd	     81.54	   ACK	32293	0
-fdrp	     81.58	  DATA	32000	293
- drp	     81.63	  DATA	31000	1000
- snd	     81.66	   ACK	32293	0
-fdrp	     81.70	  DATA	29000	1000
- drp	     81.74	  DATA	32000	293
- snd	     81.78	   ACK	32293	0
- drp	     81.82	  DATA	27000	1000
- snd	     81.86	   ACK	32293	0
- rcv	     81.90	   FIN	32293	0
- snd	     81.94	   ACK	32294	0
-Amount of (original) Data Received (in bytes): 31293
-Number of (original) Data Segments Received: 32
-Number of duplicate Data segments received: 75
-Number of Data segments dropped: 164
-Number of ACK segments dropped: 0
+rdrp	      0.17	   ACK	 1000	0
+rdrp	      1.09	   ACK	 1000	0
+rdrp	      1.18	   ACK	 1000	0
+rdrp	      1.28	   ACK	 1000	0
+rdrp	      1.37	   ACK	 1000	0
+rdrp	      1.46	   ACK	 1000	0
+ snd	      1.56	   ACK	 1000	0
+fdrp	      4.12	  DATA	 1000	1000
+fdrp	      5.34	  DATA	 2000	1000
+ rcv	      5.60	  DATA	 3000	1000
+ snd	      5.70	   ACK	 1000	0
+fdrp	      5.80	  DATA	 4000	1000
+ rcv	      5.90	  DATA	 5000	1000
+ snd	      5.98	   ACK	 1000	0
+fdrp	      6.07	  DATA	 6000	1000
+fdrp	      6.16	  DATA	 7000	1000
+fdrp	    404.24	  DATA	 1000	1000
+fdrp	    405.24	  DATA	 2000	1000
+fdrp	    405.50	  DATA	 3000	1000
+fdrp	    405.70	  DATA	 4000	1000
+ drp	    405.91	  DATA	 5000	1000
+ snd	    406.41	   ACK	 1000	0
+ rcv	    406.94	  DATA	 6000	1000
+ snd	    407.09	   ACK	 1000	0
+fdrp	    407.24	  DATA	 7000	1000
+ rcv	    435.24	  DATA	 4000	1000
+rdrp	    435.97	   ACK	 1000	0
+ rcv	    436.26	  DATA	 1000	1000
+rdrp	    436.43	   ACK	 2000	0
+ rcv	    436.59	  DATA	 2000	1000
+ snd	    436.74	   ACK	 7000	0
+fdrp	    436.90	  DATA	 3000	1000
+fdrp	    437.44	  DATA	 4000	1000
+ drp	    437.57	  DATA	 5000	1000
+ snd	    437.81	   ACK	 7000	0
+ drp	    438.10	  DATA	 6000	1000
+ snd	    438.25	   ACK	 7000	0
+fdrp	    438.40	  DATA	 7000	1000
+fdrp	    438.80	  DATA	 1000	1000
+fdrp	    438.91	  DATA	 2000	1000
+fdrp	    438.98	  DATA	 3000	1000
+fdrp	    439.05	  DATA	 4000	1000
+ drp	    439.12	  DATA	 5000	1000
+ snd	    439.18	   ACK	 7000	0
+fdrp	    439.25	  DATA	 6000	1000
+ rcv	    439.31	  DATA	 7000	1000
+rdrp	    439.37	   ACK	 8000	0
+fdrp	    439.43	  DATA	 1000	1000
+ drp	    439.50	  DATA	 2000	1000
+rdrp	    439.56	   ACK	 8000	0
+fdrp	    439.63	  DATA	 3000	1000
+ drp	    439.70	  DATA	 4000	1000
+rdrp	    439.75	   ACK	 8000	0
+fdrp	    439.82	  DATA	 5000	1000
+fdrp	    439.88	  DATA	 6000	1000
+ drp	    439.96	  DATA	 7000	1000
+ snd	    440.02	   ACK	 8000	0
+ drp	    440.09	  DATA	 1000	1000
+rdrp	    440.15	   ACK	 8000	0
+fdrp	    440.21	  DATA	 2000	1000
+ drp	    440.42	  DATA	 3000	1000
+ snd	    440.71	   ACK	 8000	0
+ drp	    440.83	  DATA	 4000	1000
+rdrp	    440.90	   ACK	 8000	0
+ drp	    440.97	  DATA	 5000	1000
+rdrp	    441.02	   ACK	 8000	0
+ drp	    441.08	  DATA	 6000	1000
+ snd	    441.14	   ACK	 8000	0
+ drp	    441.22	  DATA	 7000	1000
+ snd	    441.27	   ACK	 8000	0
+fdrp	    441.34	  DATA	 1000	1000
+fdrp	    441.40	  DATA	 2000	1000
+fdrp	    441.46	  DATA	 3000	1000
+ drp	    441.53	  DATA	 4000	1000
+ snd	    441.58	   ACK	 8000	0
+fdrp	    441.64	  DATA	 5000	1000
+fdrp	    441.70	  DATA	 6000	1000
+fdrp	    441.75	  DATA	 7000	1000
+fdrp	    441.81	  DATA	 1000	1000
+fdrp	    441.87	  DATA	 2000	1000
+ drp	    441.93	  DATA	 3000	1000
+ snd	    441.98	   ACK	 8000	0
+fdrp	    442.04	  DATA	 4000	1000
+ drp	    442.13	  DATA	 5000	1000
+rdrp	    442.19	   ACK	 8000	0
+fdrp	    442.25	  DATA	 6000	1000
+ drp	    442.31	  DATA	 7000	1000
+ snd	    442.36	   ACK	 8000	0
+fdrp	    442.43	  DATA	 1000	1000
+ drp	    442.50	  DATA	 2000	1000
+rdrp	    442.55	   ACK	 8000	0
+ drp	    442.61	  DATA	 3000	1000
+ snd	    442.66	   ACK	 8000	0
+fdrp	    442.72	  DATA	 4000	1000
+fdrp	    442.78	  DATA	 5000	1000
+fdrp	    442.84	  DATA	 6000	1000
+fdrp	    442.90	  DATA	 7000	1000
+ rcv	    442.95	  DATA	 8000	1000
+ snd	    443.01	   ACK	 9000	0
+fdrp	    443.07	  DATA	 9000	1000
+fdrp	    443.12	  DATA	10000	1000
+fdrp	    443.18	  DATA	11000	1000
+fdrp	    443.32	  DATA	12000	1000
+fdrp	    443.38	  DATA	13000	1000
+fdrp	    443.43	  DATA	 7000	1000
+ drp	    443.49	  DATA	 8000	1000
+ snd	    443.53	   ACK	 9000	0
+ rcv	    443.60	  DATA	 9000	1000
+rdrp	    443.65	   ACK	10000	0
+ rcv	    444.79	  DATA	10000	1000
+ snd	    444.92	   ACK	11000	0
+ rcv	    445.06	  DATA	11000	1000
+rdrp	    445.16	   ACK	12000	0
+fdrp	    445.26	  DATA	12000	1000
+fdrp	    445.36	  DATA	13000	1000
+fdrp	    445.45	  DATA	 7000	1000
+fdrp	    445.55	  DATA	 8000	1000
+ drp	    445.70	  DATA	 9000	1000
+rdrp	    445.81	   ACK	12000	0
+fdrp	    445.90	  DATA	10000	1000
+ drp	    446.00	  DATA	11000	1000
+rdrp	    446.09	   ACK	12000	0
+ rcv	    446.19	  DATA	12000	1000
+rdrp	    446.28	   ACK	13000	0
+fdrp	    446.39	  DATA	13000	1000
+fdrp	    446.57	  DATA	 8000	1000
+fdrp	    446.70	  DATA	 9000	1000
+fdrp	    446.82	  DATA	 8000	1000
+ drp	    446.95	  DATA	 9000	1000
+ snd	    447.04	   ACK	13000	0
+ drp	    447.16	  DATA	10000	1000
+rdrp	    448.01	   ACK	13000	0
+fdrp	    448.14	  DATA	 8000	1000
+fdrp	    448.25	  DATA	 9000	1000
+ drp	    448.35	  DATA	10000	1000
+ snd	    448.44	   ACK	13000	0
+fdrp	    448.55	  DATA	11000	1000
+fdrp	    448.65	  DATA	12000	1000
+ rcv	    448.75	  DATA	13000	1000
+ snd	    448.84	   ACK	14000	0
+ rcv	    448.95	  DATA	14000	1000
+ snd	    449.03	   ACK	15000	0
+ drp	    449.14	  DATA	 8000	1000
+ snd	    449.23	   ACK	15000	0
+ drp	    449.33	  DATA	 9000	1000
+rdrp	    449.42	   ACK	15000	0
+ drp	    449.53	  DATA	10000	1000
+rdrp	    449.61	   ACK	15000	0
+ drp	    449.80	  DATA	11000	1000
+rdrp	    449.89	   ACK	15000	0
+fdrp	    449.99	  DATA	12000	1000
+ drp	    450.09	  DATA	13000	1000
+rdrp	    450.18	   ACK	15000	0
+ drp	    450.28	  DATA	14000	1000
+ snd	    450.36	   ACK	15000	0
+fdrp	    450.48	  DATA	 8000	1000
+ drp	    450.63	  DATA	 9000	1000
+rdrp	    450.72	   ACK	15000	0
+fdrp	    450.87	  DATA	10000	1000
+fdrp	    451.61	  DATA	11000	1000
+ drp	    451.74	  DATA	12000	1000
+ snd	    451.82	   ACK	15000	0
+ drp	    452.01	  DATA	13000	1000
+ snd	    452.11	   ACK	15000	0
+ drp	    452.32	  DATA	14000	1000
+rdrp	    452.41	   ACK	15000	0
+fdrp	    452.55	  DATA	 8000	1000
+fdrp	    452.66	  DATA	 9000	1000
+ drp	    452.77	  DATA	 8000	1000
+ snd	    452.88	   ACK	15000	0
+fdrp	    453.01	  DATA	15000	1000
+ rcv	    453.21	  DATA	16000	1000
+ snd	    453.29	   ACK	15000	0
+ rcv	    453.39	  DATA	17000	1000
+rdrp	    453.47	   ACK	15000	0
+ rcv	    453.58	  DATA	18000	1000
+rdrp	    453.78	   ACK	15000	0
+ rcv	    454.00	  DATA	19000	1000
+ snd	    454.20	   ACK	15000	0
+ rcv	    454.27	  DATA	20000	1000
+rdrp	    454.32	   ACK	15000	0
+fdrp	    454.37	  DATA	21000	1000
+fdrp	    454.41	  DATA	15000	1000
+ drp	    454.47	  DATA	16000	1000
+rdrp	    454.51	   ACK	15000	0
+ drp	    454.55	  DATA	17000	1000
+ snd	    454.60	   ACK	15000	0
+ drp	    454.65	  DATA	18000	1000
+rdrp	    454.69	   ACK	15000	0
+fdrp	    454.74	  DATA	19000	1000
+ drp	    454.79	  DATA	20000	1000
+ snd	    454.83	   ACK	15000	0
+fdrp	    454.89	  DATA	21000	1000
+ rcv	    454.93	  DATA	15000	1000
+ snd	    454.98	   ACK	21000	0
+ drp	    455.03	  DATA	16000	1000
+ snd	    455.07	   ACK	21000	0
+fdrp	    455.11	  DATA	17000	1000
+fdrp	    455.16	  DATA	18000	1000
+ drp	    455.20	  DATA	19000	1000
+ snd	    455.24	   ACK	21000	0
+fdrp	    455.29	  DATA	15000	1000
+ drp	    455.34	  DATA	16000	1000
+ snd	    455.37	   ACK	21000	0
+ drp	    455.42	  DATA	15000	1000
+ snd	    455.47	   ACK	21000	0
+ drp	    455.53	  DATA	16000	1000
+rdrp	    455.57	   ACK	21000	0
+fdrp	    455.62	  DATA	17000	1000
+ drp	    455.66	  DATA	18000	1000
+ snd	    455.70	   ACK	21000	0
+fdrp	    455.75	  DATA	19000	1000
+fdrp	    455.79	  DATA	15000	1000
+fdrp	    455.83	  DATA	16000	1000
+fdrp	    455.87	  DATA	17000	1000
+ drp	    455.92	  DATA	18000	1000
+rdrp	    455.96	   ACK	21000	0
+fdrp	    456.00	  DATA	19000	1000
+fdrp	    456.04	  DATA	20000	1000
+fdrp	    456.09	  DATA	21000	1000
+fdrp	    456.13	  DATA	15000	1000
+ drp	    456.17	  DATA	16000	1000
+ snd	    456.21	   ACK	21000	0
+fdrp	    456.26	  DATA	17000	1000
+ drp	    456.30	  DATA	18000	1000
+rdrp	    456.34	   ACK	21000	0
+fdrp	    456.39	  DATA	19000	1000
+ drp	    456.43	  DATA	20000	1000
+ snd	    456.46	   ACK	21000	0
+ rcv	    456.52	  DATA	21000	1000
+ snd	    456.55	   ACK	22000	0
+ drp	    456.60	  DATA	15000	1000
+rdrp	    456.64	   ACK	22000	0
+ drp	    456.68	  DATA	16000	1000
+ snd	    456.72	   ACK	22000	0
+ drp	    456.77	  DATA	17000	1000
+rdrp	    456.81	   ACK	22000	0
+fdrp	    456.85	  DATA	18000	1000
+fdrp	    457.06	  DATA	19000	1000
+fdrp	    457.13	  DATA	20000	1000
+fdrp	    457.18	  DATA	21000	1000
+ drp	    457.22	  DATA	15000	1000
+ snd	    457.27	   ACK	22000	0
+fdrp	    457.32	  DATA	16000	1000
+ drp	    457.36	  DATA	17000	1000
+rdrp	    457.40	   ACK	22000	0
+fdrp	    457.45	  DATA	18000	1000
+fdrp	    457.50	  DATA	19000	1000
+fdrp	    457.55	  DATA	20000	1000
+fdrp	    457.60	  DATA	21000	1000
+ drp	    457.65	  DATA	15000	1000
+ snd	    457.68	   ACK	22000	0
+ drp	    457.76	  DATA	16000	1000
+rdrp	    457.83	   ACK	22000	0
+fdrp	    457.88	  DATA	17000	1000
+fdrp	    457.95	  DATA	18000	1000
+fdrp	    458.01	  DATA	19000	1000
+ drp	    458.06	  DATA	20000	1000
+ snd	    458.09	   ACK	22000	0
+ drp	    458.14	  DATA	21000	1000
+ snd	    458.18	   ACK	22000	0
+fdrp	    458.23	  DATA	15000	1000
+ drp	    458.27	  DATA	16000	1000
+ snd	    458.31	   ACK	22000	0
+ drp	    458.35	  DATA	17000	1000
+rdrp	    458.39	   ACK	22000	0
+ drp	    458.43	  DATA	18000	1000
+rdrp	    458.46	   ACK	22000	0
+ drp	    458.50	  DATA	19000	1000
+ snd	    458.54	   ACK	22000	0
+ drp	    458.59	  DATA	20000	1000
+rdrp	    458.63	   ACK	22000	0
+ drp	    458.67	  DATA	21000	1000
+rdrp	    458.70	   ACK	22000	0
+ drp	    458.74	  DATA	15000	1000
+rdrp	    458.78	   ACK	22000	0
+fdrp	    458.81	  DATA	16000	1000
+fdrp	    458.85	  DATA	17000	1000
+fdrp	    458.90	  DATA	18000	1000
+fdrp	    459.19	  DATA	19000	1000
+ drp	    459.25	  DATA	20000	1000
+rdrp	    459.30	   ACK	22000	0
+ drp	    459.34	  DATA	21000	1000
+rdrp	    459.38	   ACK	22000	0
+ drp	    459.42	  DATA	15000	1000
+rdrp	    459.46	   ACK	22000	0
+fdrp	    459.49	  DATA	16000	1000
+fdrp	    459.53	  DATA	17000	1000
+ drp	    459.58	  DATA	18000	1000
+ snd	    459.61	   ACK	22000	0
+fdrp	    459.66	  DATA	19000	1000
+fdrp	    459.70	  DATA	20000	1000
+fdrp	    459.74	  DATA	21000	1000
+ drp	    459.78	  DATA	15000	1000
+rdrp	    459.82	   ACK	22000	0
+ drp	    459.86	  DATA	16000	1000
+rdrp	    459.89	   ACK	22000	0
+fdrp	    459.95	  DATA	17000	1000
+ drp	    460.00	  DATA	18000	1000
+ snd	    460.03	   ACK	22000	0
+fdrp	    460.07	  DATA	19000	1000
+ drp	    460.11	  DATA	20000	1000
+ snd	    460.15	   ACK	22000	0
+ drp	    460.19	  DATA	21000	1000
+rdrp	    460.23	   ACK	22000	0
+ drp	    460.27	  DATA	15000	1000
+ snd	    460.31	   ACK	22000	0
+fdrp	    460.35	  DATA	16000	1000
+fdrp	    460.39	  DATA	17000	1000
+fdrp	    460.43	  DATA	18000	1000
+fdrp	    460.47	  DATA	19000	1000
+ drp	    460.51	  DATA	20000	1000
+ snd	    460.54	   ACK	22000	0
+fdrp	    460.59	  DATA	21000	1000
+fdrp	    460.62	  DATA	15000	1000
+fdrp	    460.67	  DATA	21000	1000
+fdrp	    460.71	  DATA	21000	1000
+ drp	    460.75	  DATA	21000	1000
+rdrp	    460.79	   ACK	22000	0
+fdrp	    460.84	  DATA	21000	1000
+fdrp	    460.88	  DATA	22000	1000
+ rcv	    460.92	  DATA	23000	1000
+ snd	    460.95	   ACK	22000	0
+ rcv	    460.99	  DATA	24000	1000
+ snd	    461.03	   ACK	22000	0
+fdrp	    461.07	  DATA	25000	1000
+ rcv	    461.11	  DATA	26000	1000
+rdrp	    461.14	   ACK	22000	0
+ rcv	    461.17	  DATA	27000	1000
+ snd	    461.21	   ACK	22000	0
+ drp	    461.25	  DATA	21000	1000
+ snd	    461.28	   ACK	22000	0
+ rcv	    461.32	  DATA	22000	1000
+ snd	    461.36	   ACK	25000	0
+fdrp	    461.40	  DATA	23000	1000
+ drp	    461.43	  DATA	24000	1000
+rdrp	    461.46	   ACK	25000	0
+fdrp	    461.50	  DATA	25000	1000
+fdrp	    461.53	  DATA	26000	1000
+ drp	    461.57	  DATA	22000	1000
+ snd	    461.60	   ACK	25000	0
+ drp	    461.64	  DATA	23000	1000
+rdrp	    461.68	   ACK	25000	0
+fdrp	    462.17	  DATA	22000	1000
+ drp	    462.39	  DATA	22000	1000
+ snd	    462.50	   ACK	25000	0
+fdrp	    462.62	  DATA	23000	1000
+fdrp	    462.72	  DATA	22000	1000
+fdrp	    462.92	  DATA	22000	1000
+ drp	    463.27	  DATA	22000	1000
+rdrp	    463.37	   ACK	25000	0
+fdrp	    463.48	  DATA	23000	1000
+ rcv	    463.95	  DATA	25000	1000
+rdrp	    464.06	   ACK	28000	0
+ drp	    464.12	  DATA	26000	1000
+rdrp	    464.15	   ACK	28000	0
+ drp	    464.20	  DATA	27000	1000
+ snd	    464.23	   ACK	28000	0
+fdrp	    464.27	  DATA	28000	1000
+fdrp	    464.31	  DATA	29000	1000
+ rcv	    464.35	  DATA	30000	1000
+rdrp	    464.38	   ACK	28000	0
+ rcv	    464.41	  DATA	31000	1000
+rdrp	    464.44	   ACK	28000	0
+fdrp	    464.48	  DATA	25000	1000
+ drp	    464.51	  DATA	26000	1000
+ snd	    464.54	   ACK	28000	0
+ drp	    464.58	  DATA	27000	1000
+rdrp	    464.61	   ACK	28000	0
+fdrp	    464.64	  DATA	28000	1000
+ rcv	    464.68	  DATA	29000	1000
+rdrp	    464.70	   ACK	28000	0
+fdrp	    464.81	  DATA	30000	1000
+fdrp	    464.91	  DATA	31000	1000
+fdrp	    464.99	  DATA	25000	1000
+ drp	    465.07	  DATA	26000	1000
+ snd	    465.13	   ACK	28000	0
+ drp	    465.30	  DATA	27000	1000
+ snd	    465.53	   ACK	28000	0
+fdrp	    465.60	  DATA	28000	1000
+fdrp	    465.65	  DATA	29000	1000
+ drp	    465.71	  DATA	30000	1000
+rdrp	    465.77	   ACK	28000	0
+ drp	    465.82	  DATA	31000	1000
+rdrp	    465.86	   ACK	28000	0
+ rcv	    465.90	  DATA	32000	1000
+ snd	    465.93	   ACK	28000	0
+fdrp	    465.97	  DATA	33000	1000
+fdrp	    466.00	  DATA	34000	1000
+ rcv	    466.04	  DATA	28000	1000
+ snd	    466.07	   ACK	33000	0
+fdrp	    466.11	  DATA	29000	1000
+fdrp	    466.14	  DATA	30000	1000
+ drp	    466.17	  DATA	31000	1000
+rdrp	    466.20	   ACK	33000	0
+ drp	    466.24	  DATA	32000	1000
+ snd	    466.26	   ACK	33000	0
+fdrp	    466.30	  DATA	33000	1000
+ rcv	    466.34	  DATA	34000	1000
+ snd	    466.36	   ACK	33000	0
+fdrp	    466.40	  DATA	28000	1000
+fdrp	    466.43	  DATA	29000	1000
+fdrp	    466.46	  DATA	30000	1000
+fdrp	    466.49	  DATA	31000	1000
+ drp	    466.53	  DATA	32000	1000
+ snd	    466.56	   ACK	33000	0
+fdrp	    466.60	  DATA	33000	1000
+ drp	    466.63	  DATA	34000	1000
+ snd	    466.66	   ACK	33000	0
+fdrp	    466.73	  DATA	28000	1000
+fdrp	    466.77	  DATA	29000	1000
+fdrp	    466.81	  DATA	30000	1000
+fdrp	    466.84	  DATA	31000	1000
+fdrp	    466.87	  DATA	32000	1000
+ rcv	    466.90	  DATA	33000	1000
+ snd	    466.93	   ACK	35000	0
+ drp	    467.01	  DATA	34000	1000
+rdrp	    467.04	   ACK	35000	0
+fdrp	    467.08	  DATA	28000	1000
+fdrp	    467.11	  DATA	29000	1000
+ drp	    467.35	  DATA	30000	1000
+rdrp	    467.46	   ACK	35000	0
+fdrp	    467.54	  DATA	31000	1000
+fdrp	    467.61	  DATA	32000	1000
+fdrp	    467.69	  DATA	33000	1000
+fdrp	    467.76	  DATA	34000	1000
+fdrp	    467.88	  DATA	28000	1000
+fdrp	    468.77	  DATA	29000	1000
+fdrp	    468.86	  DATA	30000	1000
+ drp	    468.94	  DATA	31000	1000
+ snd	    469.00	   ACK	35000	0
+ drp	    469.08	  DATA	32000	1000
+rdrp	    469.14	   ACK	35000	0
+fdrp	    469.21	  DATA	33000	1000
+ drp	    469.28	  DATA	34000	1000
+rdrp	    469.34	   ACK	35000	0
+fdrp	    469.41	  DATA	28000	1000
+ drp	    469.47	  DATA	29000	1000
+ snd	    469.53	   ACK	35000	0
+fdrp	    469.63	  DATA	30000	1000
+ drp	    469.70	  DATA	31000	1000
+ snd	    469.75	   ACK	35000	0
+fdrp	    469.83	  DATA	32000	1000
+fdrp	    469.92	  DATA	33000	1000
+ drp	    470.09	  DATA	34000	1000
+rdrp	    470.20	   ACK	35000	0
+ drp	    470.31	  DATA	28000	1000
+rdrp	    470.38	   ACK	35000	0
+ drp	    470.46	  DATA	29000	1000
+rdrp	    470.53	   ACK	35000	0
+fdrp	    470.63	  DATA	30000	1000
+fdrp	    470.72	  DATA	33000	1000
+ drp	    470.80	  DATA	34000	1000
+rdrp	    470.86	   ACK	35000	0
+fdrp	    470.93	  DATA	35000	638
+fdrp	    471.00	  DATA	33000	1000
+fdrp	    471.08	  DATA	34000	1000
+ rcv	    471.14	  DATA	35000	638
+ snd	    471.20	   ACK	35638	0
+fdrp	    471.82	  DATA	33000	1000
+fdrp	    471.96	  DATA	34000	1000
+ drp	    472.04	  DATA	35000	638
+rdrp	    472.10	   ACK	35638	0
+ drp	    472.17	  DATA	33000	1000
+ snd	    472.23	   ACK	35638	0
+ drp	    472.31	  DATA	34000	1000
+ snd	    472.37	   ACK	35638	0
+ drp	    472.47	  DATA	35000	638
+rdrp	    472.58	   ACK	35638	0
+ drp	    472.63	  DATA	33000	1000
+ snd	    472.66	   ACK	35638	0
+fdrp	    472.70	  DATA	34000	1000
+fdrp	    472.75	  DATA	35000	638
+fdrp	    472.78	  DATA	33000	1000
+ drp	    472.82	  DATA	34000	1000
+rdrp	    472.84	   ACK	35638	0
+fdrp	    472.87	  DATA	35000	638
+fdrp	    472.90	  DATA	33000	1000
+fdrp	    472.93	  DATA	34000	1000
+fdrp	    472.96	  DATA	35000	638
+fdrp	    472.99	  DATA	35000	638
+ drp	    473.02	  DATA	35000	638
+ snd	    473.05	   ACK	35638	0
+fdrp	    473.08	  DATA	35000	638
+fdrp	    473.12	  DATA	35000	638
+fdrp	    473.15	  DATA	35000	638
+ drp	    473.17	  DATA	35000	638
+rdrp	    473.20	   ACK	35638	0
+fdrp	    473.23	  DATA	35000	638
+fdrp	    473.26	  DATA	35000	638
+ drp	    473.28	  DATA	35000	638
+ snd	    473.31	   ACK	35638	0
+ drp	    473.35	  DATA	35000	638
+rdrp	    473.40	   ACK	35638	0
+fdrp	    473.43	  DATA	35000	638
+ drp	    473.46	  DATA	35000	638
+rdrp	    473.48	   ACK	35638	0
+ drp	    473.51	  DATA	35000	638
+ snd	    473.53	   ACK	35638	0
+ drp	    473.57	  DATA	35000	638
+rdrp	    473.59	   ACK	35638	0
+ drp	    473.63	  DATA	35000	638
+rdrp	    473.65	   ACK	35638	0
+fdrp	    473.69	  DATA	35000	638
+fdrp	    473.72	  DATA	35000	638
+fdrp	    473.75	  DATA	35000	638
+ drp	    473.78	  DATA	35000	638
+ snd	    473.81	   ACK	35638	0
+fdrp	    473.87	  DATA	35000	638
+fdrp	    473.93	  DATA	35000	638
+fdrp	    473.98	  DATA	35000	638
+ drp	    474.03	  DATA	35000	638
+rdrp	    474.12	   ACK	35638	0
+ drp	    474.15	  DATA	35000	638
+rdrp	    474.20	   ACK	35638	0
+ drp	    474.23	  DATA	35000	638
+ snd	    474.25	   ACK	35638	0
+fdrp	    474.29	  DATA	35000	638
+fdrp	    474.32	  DATA	35000	638
+fdrp	    474.34	  DATA	35000	638
+fdrp	    474.37	  DATA	35000	638
+ drp	    474.40	  DATA	35000	638
+ snd	    474.42	   ACK	35638	0
+ drp	    474.48	  DATA	35000	638
+rdrp	    474.51	   ACK	35638	0
+fdrp	    474.53	  DATA	35000	638
+fdrp	    474.56	  DATA	35000	638
+ drp	    474.59	  DATA	35000	638
+ snd	    474.61	   ACK	35638	0
+ drp	    474.64	  DATA	35000	638
+rdrp	    474.67	   ACK	35638	0
+ drp	    474.69	  DATA	35000	638
+rdrp	    474.72	   ACK	35638	0
+ drp	    474.75	  DATA	35000	638
+rdrp	    474.77	   ACK	35638	0
+fdrp	    474.79	  DATA	35000	638
+fdrp	    474.82	  DATA	35000	638
+ drp	    474.86	  DATA	35000	638
+ snd	    474.88	   ACK	35638	0
+fdrp	    474.91	  DATA	35000	638
+fdrp	    474.94	  DATA	35000	638
+ drp	    474.96	  DATA	35000	638
+rdrp	    474.99	   ACK	35638	0
+fdrp	    475.01	  DATA	35000	638
+ drp	    475.03	  DATA	35000	638
+rdrp	    475.06	   ACK	35638	0
+fdrp	    475.08	  DATA	35000	638
+fdrp	    475.10	  DATA	35000	638
+ drp	    475.13	  DATA	35000	638
+rdrp	    475.15	   ACK	35638	0
+ drp	    475.18	  DATA	35000	638
+rdrp	    475.20	   ACK	35638	0
+ drp	    475.23	  DATA	35000	638
+ snd	    475.25	   ACK	35638	0
+fdrp	    475.28	  DATA	35000	638
+fdrp	    475.31	  DATA	35000	638
+fdrp	    475.33	  DATA	35000	638
+ drp	    475.35	  DATA	35000	638
+rdrp	    475.37	   ACK	35638	0
+fdrp	    475.41	  DATA	35000	638
+fdrp	    475.43	  DATA	35000	638
+fdrp	    475.46	  DATA	35000	638
+ drp	    475.48	  DATA	35000	638
+rdrp	    475.51	   ACK	35638	0
+ drp	    475.53	  DATA	35000	638
+ snd	    475.55	   ACK	35638	0
+ drp	    475.59	  DATA	35000	638
+rdrp	    475.61	   ACK	35638	0
+fdrp	    475.64	  DATA	35000	638
+fdrp	    475.66	  DATA	35000	638
+ drp	    475.69	  DATA	35000	638
+ snd	    475.75	   ACK	35638	0
+fdrp	    475.78	  DATA	35000	638
+ drp	    475.80	  DATA	35000	638
+ snd	    475.83	   ACK	35638	0
+fdrp	    475.85	  DATA	35000	638
+ drp	    475.88	  DATA	35000	638
+ snd	    475.90	   ACK	35638	0
+fdrp	    475.93	  DATA	35000	638
+ drp	    475.95	  DATA	35000	638
+rdrp	    475.98	   ACK	35638	0
+fdrp	    476.00	   FIN	35638	0
+fdrp	    881.92	   FIN	35638	0
+fdrp	   1287.61	   FIN	35638	0
+ rcv	   1288.21	 RESET	    0	0
+Amount of (original) Data Received (in bytes): 34638
+Number of (original) Data Segments Received: 35
+Number of duplicate Data segments received: 145
+Number of Data segments dropped: 359
+Number of ACK segments dropped: 95

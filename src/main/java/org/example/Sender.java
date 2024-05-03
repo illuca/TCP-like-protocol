@@ -15,6 +15,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * The Sender will be able to connect the Receiver via UDP
  */
 public class Sender {
+    public static boolean allowLog = false;
 
     enum State {
         CLOSED,
@@ -23,6 +24,7 @@ public class Sender {
         CLOSING,
         FIN_WAIT,
     }
+
     // the UDP port number to be used by the sender to send PTP segments to the receiver
     private final int senderPort;
     // the UDP port number on which receiver is expecting to receive PTP segments from the sender
@@ -293,8 +295,19 @@ public class Sender {
         } else {
             newLog = String.format("%4s\t%10.2f\t%6s\t%5d\t%d%n", action, sentTime, packetType, sequence, numberOfBytes);
         }
-        System.out.print(newLog);
+        print(newLog);
         this.log.append(newLog);
+    }
+
+    private void print(Object newLog) {
+        if (allowLog) {
+            System.out.print(newLog);
+        }
+    }
+    private void println(Object newLog) {
+        if (allowLog) {
+            System.out.println(newLog);
+        }
     }
 
     public int removeBeforeAndIncluding(int x) {
@@ -337,19 +350,22 @@ public class Sender {
         // for sending data and receive data
         if (this.state == State.ESTABLISHED || this.state == State.CLOSING) {
             logMessage("rcv", Utils.duration(System.nanoTime(), this.startTime), ackSegment.getType(), ackSegment.getSeqNo(), 0);
-            int removedSeq = removeBeforeAndIncluding(ackSegment.getSeqNo());
-            if (removedSeq != -1) {
-                if (this.duplicateACKs.getOrDefault(removedSeq, 0) >= 3) {
-                    // delete duplicate ACK whose has received for more than 3 times
-                    this.duplicateACKFlag.set(false);
-                    this.interrupt.set(true);
-                }
+            if (this.duplicateACKs.get(ackSegment.getSeqNo()) == null) {
+                this.duplicateACKs.put(ackSegment.getSeqNo(), 1);
             } else {
                 this.duplicateACKs.merge(ackSegment.getSeqNo(), 1, Integer::sum);
-                if (this.duplicateACKs.getOrDefault(ackSegment.getSeqNo(), 0) >= 3) {
-                    // notify duplicate ACK whose has received for more than 3 times
-                    System.out.println("notify>=3: " + ackSegment.getSeqNo());
+                this.duplicatedACKCounter++;
+            }
+            println(this.duplicateACKs);
+            int removedSeq = removeBeforeAndIncluding(ackSegment.getSeqNo());
+            if (this.duplicateACKs.getOrDefault(ackSegment.getSeqNo(), 0) > 3) {
+                if (removedSeq == -1) {
+                    println(">3: " + ackSegment.getSeqNo());
                     this.duplicateACKFlag.set(true);
+                    this.interrupt.set(true);
+                } else {
+                    // remove successfully
+                    this.duplicateACKFlag.set(false);
                     this.interrupt.set(true);
                 }
             }
@@ -379,7 +395,7 @@ public class Sender {
 
     private void writeLogToFile() {
         this.duplicatedACKCounter = this.duplicateACKs.values().stream()
-                .filter(value -> value >= 2)
+                .filter(value -> value >= 1)
                 .mapToInt(Integer::intValue)
                 .sum();
 
@@ -394,8 +410,9 @@ public class Sender {
 
     public static void main(String[] args) {
         if (args.length == 0) {
-            args = new String[]{"7777", "8888", "FileToSend.txt", "7000", "20"};
+            args = new String[]{"7777", "8888", "FileToSend.txt", "7000", "400"};
             System.out.println("Args are empty. Use default configuration.");
+            Sender.allowLog = true;
         }
         if (args.length != 5) {
             System.err.println("\n===== Error usage, java Sender senderPort receiverPort FileReceived.txt maxWin rto ======\n");

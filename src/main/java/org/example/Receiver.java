@@ -18,10 +18,12 @@ import static java.util.Comparator.comparingInt;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toCollection;
 
+
 /**
  * The server will be able to receive the file from the sender via UDP
  */
 public class Receiver {
+    public static boolean allowLog = false;
     enum State {
         CLOSED,
         LISTEN,
@@ -301,15 +303,27 @@ public class Receiver {
         }
 
         newLog = String.format("%4s\t%10s\t%6s\t%5d\t%d%n", action, durationString, packetType, sequence, numberOfBytes);
-        System.out.print(newLog);
+        print(newLog);
         this.log.append(newLog);
+    }
+
+    private void print(Object newLog) {
+        if (allowLog) {
+            System.out.print(newLog);
+        }
+    }
+    private void println(Object newLog) {
+        if (allowLog) {
+            System.out.println(newLog);
+        }
     }
 
     public static void main(String[] args) throws IOException {
         Logger.getLogger(Receiver.class.getName()).log(Level.INFO, "Starting Receiver...");
         if (args.length == 0) {
             System.out.println("Args are empty. Use default configuration.");
-            args = new String[]{"8888", "7777", "FileReceived.txt", "0.5", "0"}; // flp rlp
+            args = new String[]{"8888", "7777", "FileReceived.txt", "0.5", "0.5"}; // flp rlp
+            Receiver.allowLog = true;
         }
         if (args.length != 5) {
             System.err.println("\n===== Error usage, java Receiver <receiver_port> <sender_port> <FileReceived.txt> <flp> <rlp> =====\n");

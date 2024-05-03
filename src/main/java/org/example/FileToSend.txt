@@ -1,784 +1,604 @@
-# 说明
+Google Java Style Guide
+Table of Contents
+1 Introduction
+1.1 Terminology notes
+1.2 Guide notes
+2 Source file basics
+2.1 File name
+2.2 File encoding: UTF-8
+2.3 Special characters
+3 Source file structure
+3.1 License or copyright information, if present
+3.2 Package statement
+3.3 Import statements
+3.4 Class declaration
+4 Formatting
+4.1 Braces
+4.2 Block indentation: +2 spaces
+4.3 One statement per line
+4.4 Column limit: 100
+4.5 Line-wrapping
+4.6 Whitespace
+4.7 Grouping parentheses: recommended
+4.8 Specific constructs
+5 Naming
+5.1 Rules common to all identifiers
+5.2 Rules by identifier type
+5.3 Camel case: defined
+6 Programming Practices
+6.1 @Override: always used
+6.2 Caught exceptions: not ignored
+6.3 Static members: qualified using class
+6.4 Finalizers: not used
+7 Javadoc
+7.1 Formatting
+7.2 The summary fragment
+7.3 Where Javadoc is used
+1 Introduction
+This document serves as the complete definition of Google's coding standards for source code in the Java™ Programming Language. A Java source file is described as being in Google Style if and only if it adheres to the rules herein.
+
+Like other programming style guides, the issues covered span not only aesthetic issues of formatting, but other types of conventions or coding standards as well. However, this document focuses primarily on the hard-and-fast rules that we follow universally, and avoids giving advice that isn't clearly enforceable (whether by human or tool).
+
+1.1 Terminology notes
+In this document, unless otherwise clarified:
+
+The term class is used inclusively to mean an "ordinary" class, enum class, interface or annotation type (@interface).
+The term member (of a class) is used inclusively to mean a nested class, field, method, or constructor; that is, all top-level contents of a class except initializers and comments.
+The term comment always refers to implementation comments. We do not use the phrase "documentation comments", and instead use the common term "Javadoc."
+Other "terminology notes" will appear occasionally throughout the document.
+
+1.2 Guide notes
+Example code in this document is non-normative. That is, while the examples are in Google Style, they may not illustrate the only stylish way to represent the code. Optional formatting choices made in examples should not be enforced as rules.
+
+2 Source file basics
+2.1 File name
+The source file name consists of the case-sensitive name of the top-level class it contains (of which there is exactly one), plus the .java extension.
+
+2.2 File encoding: UTF-8
+Source files are encoded in UTF-8.
+
+2.3 Special characters
+2.3.1 Whitespace characters
+Aside from the line terminator sequence, the ASCII horizontal space character (0x20) is the only whitespace character that appears anywhere in a source file. This implies that:
+
+All other whitespace characters in string and character literals are escaped.
+Tab characters are not used for indentation.
+2.3.2 Special escape sequences
+For any character that has a special escape sequence (\b, \t, \n, \f, \r, \", \' and \\), that sequence is used rather than the corresponding octal (e.g. \012) or Unicode (e.g. \u000a) escape.
+
+2.3.3 Non-ASCII characters
+For the remaining non-ASCII characters, either the actual Unicode character (e.g. ∞) or the equivalent Unicode escape (e.g. \u221e) is used. The choice depends only on which makes the code easier to read and understand, although Unicode escapes outside string literals and comments are strongly discouraged.
+
+Tip: In the Unicode escape case, and occasionally even when actual Unicode characters are used, an explanatory comment can be very helpful.
+
+Examples:
+
+Example	Discussion
+String unitAbbrev = "μs";	Best: perfectly clear even without a comment.
+String unitAbbrev = "\u03bcs"; // "μs"	Allowed, but there's no reason to do this.
+String unitAbbrev = "\u03bcs"; // Greek letter mu, "s"	Allowed, but awkward and prone to mistakes.
+String unitAbbrev = "\u03bcs";	Poor: the reader has no idea what this is.
+return '\ufeff' + content; // byte order mark	Good: use escapes for non-printable characters, and comment if necessary.
+Tip: Never make your code less readable simply out of fear that some programs might not handle non-ASCII characters properly. If that should happen, those programs are broken and they must be fixed.
+
+3 Source file structure
+A source file consists of, in order:
+
+License or copyright information, if present
+Package statement
+Import statements
+Exactly one top-level class
+Exactly one blank line separates each section that is present.
+
+3.1 License or copyright information, if present
+If license or copyright information belongs in a file, it belongs here.
+
+3.2 Package statement
+The package statement is not line-wrapped. The column limit (Section 4.4, Column limit: 100) does not apply to package statements.
+
+3.3 Import statements
+3.3.1 No wildcard imports
+Wildcard imports, static or otherwise, are not used.
 
-implement a reliable transport protocol called STP (Simple Transport Protocol) in Java. STP is designed to provide a byte-stream abstraction, like TCP, and sends pipelined data segments using a sliding window. Unlike TCP, STP does not implement congestion control or flow control. It also features an asymmetric design, with two distinct STP endpoints: the "sender" and the "receiver". Data packets flow from the sender to the receiver, while acknowledgements flow in the reverse direction.
+3.3.2 No line-wrapping
+Import statements are not line-wrapped. The column limit (Section 4.4, Column limit: 100) does not apply to import statements.
 
-To initiate the sender, use the following command:
+3.3.3 Ordering and spacing
+Imports are ordered as follows:
 
-```
-java Sender sender_port receiver_port FileToSend.txt max_win rto
-```
+All static imports in a single block.
+All non-static imports in a single block.
+If there are both static and non-static imports, a single blank line separates the two blocks. There are no other blank lines between import statements.
 
-To initiate the receiver, use the following command:
+Within each block the imported names appear in ASCII sort order. (Note: this is not the same as the import statements being in ASCII sort order, since '.' sorts before ';'.)
 
-```
-java Receiver receiver_port sender_port FileReceived.txt flp rlp
-```
+3.3.4 No static import for classes
+Static import is not used for static nested classes. They are imported with normal imports.
 
-Here's an overview of the project requirements:
+3.4 Class declaration
+3.4.1 Exactly one top-level class declaration
+Each top-level class resides in a source file of its own.
 
-1. Establish a connection using a two-way handshake (SYN, ACK).
-2. Choose a random initial sequence number (ISN) and perform sequence number arithmetic modulo 2^16.
-3. Implement a one-directional (forward) connection termination (FIN, ACK).
-4. Implement a sliding window protocol like TCP, with a buffer to store unacknowledged segments and limited by maxWin.
-5. Encapsulate STP segments (Data, SYN, FIN) in UDP segments and transmit through a UDP socket.
-6. Maintain a single timer for retransmission of data segments based on the supplied rto value.
-7. Implement simplified TCP sender functionality and fast retransmit on three duplicate ACKs.
-8. Use the "seqno" field for both sequence numbers and cumulative acknowledgments.
-9. Process received ACK segments from the receiver through the same socket used for data transmission.
-10. Maintain a log file titled "Sender_log.txt" to record information about each segment sent and received.
+3.4.2 Ordering of class contents
+The order you choose for the members and initializers of your class can have a great effect on learnability. However, there's no single correct recipe for how to do it; different classes may order their contents in different ways.
 
-Once the file transfer is complete, the sender should print the following statistics at the end of the log file:
+What is important is that each class uses some logical order, which its maintainer could explain if asked. For example, new methods are not just habitually added to the end of the class, as that would yield "chronological by date added" ordering, which is not a logical ordering.
 
-- Amount of (original) Data Transferred (in bytes) (excluding retransmissions)
-- Number of Data Segments Sent (excluding retransmissions)
-- Number of Retransmitted Data Segments
-- Number of Duplicate Acknowledgements received
+3.4.2.1 Overloads: never split
+Methods of a class that share the same name appear in a single contiguous group with no other members in between. The same applies to multiple constructors (which always have the same name). This rule applies even when modifiers such as static or private differ between the methods.
 
-The sender should finish execution after the file transfer is complete and should not print any output to the terminal.
+4 Formatting
+Terminology Note: block-like construct refers to the body of a class, method or constructor. Note that, by Section 4.8.3.1 on array initializers, any array initializer may optionally be treated as if it were a block-like construct.
 
-# 已经完成的部分
+4.1 Braces
+4.1.1 Use of optional braces
+Braces are used with if, else, for, do and while statements, even when the body is empty or contains only a single statement.
 
-flp, rlp ,SYN, rto
+Other optional braces, such as those in a lambda expression, remain optional.
 
+4.1.2 Nonempty blocks: K & R style
+Braces follow the Kernighan and Ritchie style ("Egyptian brackets") for nonempty blocks and block-like constructs:
 
+No line break before the opening brace, except as detailed below.
+Line break after the opening brace.
+Line break before the closing brace.
+Line break after the closing brace, only if that brace terminates a statement or terminates the body of a method, constructor, or named class. For example, there is no line break after the brace if it is followed by else or a comma.
+Exception: In places where these rules allow a single statement ending with a semicolon (;), a block of statements can appear, and the opening brace of this block is preceded by a line break. Blocks like these are typically introduced to limit the scope of local variables, for example inside switch statements.
 
-# 
+Examples:
 
-# 握手
+return () -> {
+  while (condition()) {
+    method();
+  }
+};
 
-
-
-# 重传
-
-If a corresponding ACK is not received within rto msec, the sender should retransmit the SYN segment.
-
-
-
-For example, the following shows the log file for a sender that transmits 3000 bytes of data and the **rto** is 100 msec. The ISN chosen is 4521 and max_win is 3000 bytes. Notice that the third data packet is dropped and is hence retransmitted after a timeout interval of 100 msec.
-
-# 关闭
-
-If a corresponding ACK is not received within **rto** msec, the sender should retransmit the SYN segment. If the SYN segment is not acknowledged after three retransmission attempts, a RESET segment must be sent to the destination port and the sender moves to the CLOSED state.
-
-
-
-If one end point detects behaviour that is unexpected, it should reset the connection (i.e., close the connection) by sending a RESET segment. For example, if the receiver receives a data segment while it is in the SYN state (where it is expecting a SYN segment). A message should be printed to the terminal indicating that the connection is being reset. The state transition diagram on the previous page does not capture such erroneous scenarios. Note that, we will NOT be rigorously testing your code for such unexpected behaviour.
-
-
-
-If the ACK is not received before a timeout (rto msec), the sender should retransmit the SYN. If the SYN segment is not acknowledged after three retransmission attempts, a RESET segment must be sent to the receiver and the sender moves to the CLOSED state.
-
-
-
-The receiver will only print a message altering of a closure of the connection due to a RESET packet to the terminal. No other output will be displayed.
-
-# 格式
-
-<snd/rcv> <time> <type of packet> <seq-number> <number-of-bytes>
-
-the SYN segment will always be sent at time 0.
-
-where <type of packet> could be SYN, ACK, FIN, DATA and RESET and the fields should be tab separated. Time should be in milliseconds and relative to when the SYN segment was sent – i.e., the SYN segment will always be sent at time 0. The number of bytes should be zero for all segments other than data segments.
-
-
-
-# 概率
-
-flp: determines the probability of a segment (data, SYN, and FIN) in the forward direction from the sender being dropped. In other words, each segment arriving at the receiver socket will be dropped with a probability flp.
-
-
-
-rlp: determines the probability of an ACK packet created by the receiver being dropped. In other words, each ACK segment created by the receiver will be dropped with a probability rlp.If the ACK segment is not dropped, then it will be transmitted through the socket to the sender.
-
-
-
-During connection teardown, the sender must transmit a FIN segment, start a timer (rto) and wait for an ACK.
-
-# window
-
-The receive window should be zero for all segments other than ACK segments.
-
-
-
-
-
-# 多线程
-
-
-
-
-
-# log
-
-Once the entire file has been transmitted reliably and the connection is closed (remember to follow the state machine for the receiver), the receiver will also print the following statistics at the end of the log file (i.e., Receiver_log.txt):
-
-
-package org.example; /**
- * Sample code for Receiver
- * Python 3
- * Usage:
- * - You need to compile it first: javac Sender.java
- * - then run it: java Sender 9000 10000 FileToReceived.txt 1000 1
- * coding: utf-8
- * <p>
- * Notes:
- * Try to run the server first with the command:
- * java Receiver 10000 9000 FileReceived.txt 1 1
- * Then run the sender:
- * java Sender 9000 10000 FileToReceived.txt 1000 1
- * <p>
- * Author: Wei Song (Tutor for COMP3331/9331)
- */
-
-import java.net.*;
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.logging.*;
-import java.util.concurrent.locks.ReentrantLock;
-
-
-public class Sender {
-
-    enum State {
-        CLOSED,
-        SYN_SENT,
-        ESTABLISHED,
-        CLOSING,
-        FIN_WAIT,
+return new MyClass() {
+  @Override public void method() {
+    if (condition()) {
+      try {
+        something();
+      } catch (ProblemException e) {
+        recover();
+      }
+    } else if (otherCondition()) {
+      somethingElse();
+    } else {
+      lastThing();
     }
-
-    /**
-     * The Sender will be able to connect the Receiver via UDP
-     * :param sender_port: the UDP port number to be used by the sender to send PTP segments to the receiver
-     * :param receiver_port: the UDP port number on which receiver is expecting to receive PTP segments from the sender
-     * :param filename: the name of the text file that must be transferred from sender to receiver using your reliable transport protocol.
-     * :param max_win: the maximum window size in bytes for the sender window.
-     * :param rot: the value of the retransmission timer in milliseconds. This should be an unsigned integer.
-     */
-
-    private final int senderPort;
-    private final int receiverPort;
-    private final InetAddress senderAddress;
-
-    private int ISN;
-    private int lastDataSequence;
-    private final InetAddress receiverAddress;
-    private final DatagramSocket senderSocket;
-    private final Lock socketLock = new ReentrantLock();
-    private final StringBuffer log;
-    private final Lock logLock = new ReentrantLock();
-    private State state = State.CLOSED;
-    private final String filename;
-    // must >= 1000. and should be n * 1000
-    private final int maxWin;
-    private final int rto;
-    private final BlockingQueue<STPSegment> unAcked;
-    private Set<Integer> sent;
-
-    private long startTime = 0;
-
-    private int bytesSentCounter = 0;
-    private int segmentSentCounter = 0;
-    private int retransmittedSegmentCounter = 0;
-    private int duplicatedACKCounter = 0;
-    private final Lock stateLock = new ReentrantLock();
-
-    private DatagramPacket ack;
-    private final Lock ackLock = new ReentrantLock();
-    private final Condition ackReceivedCondition = ackLock.newCondition();
-    private Thread receiveThread;
-    private Thread sendFileThread;
-    private final Condition stateCondition = stateLock.newCondition();
-
-
-    private final int MSS = 1000;
-
-    public Sender(int senderPort, int receiverPort, String filename, int maxWin, int rto) throws IOException {
-        this.senderPort = senderPort;
-        this.receiverPort = receiverPort;
-        this.senderAddress = InetAddress.getByName("127.0.0.1");
-        this.receiverAddress = InetAddress.getByName("127.0.0.1");
-        this.filename = filename;
-        this.maxWin = maxWin;
-        this.rto = rto;
-        this.log = new StringBuffer();
-        this.unAcked = new LinkedBlockingQueue<>(maxWin / MSS);
-        this.sent = ConcurrentHashMap.newKeySet();
-//        this.receiveThread = new Thread(this::listen);
-        // init the UDP socket
-        Logger.getLogger(Sender.class.getName()).log(Level.INFO, "The sender is using the address {0}:{1}", new Object[]{senderAddress, senderPort});
-        this.senderSocket = new DatagramSocket(senderPort, senderAddress);
-
-        this.receiveThread = new Thread(() -> {
-
-            while (this.state != State.SYN_SENT) {
-                try {
-                    stateLock.lock();
-                    stateCondition.await();
-                } catch (InterruptedException ignore) {
-                } finally {
-                    stateLock.unlock();
-                }
-            }
-            while (this.state != State.CLOSED) {
-                this.receiveACK();
-            }
-        });
-        this.sendFileThread = new Thread(() -> {
-            while (this.state != State.ESTABLISHED) {
-                try {
-                    stateLock.lock();
-                    stateCondition.await();
-                } catch (InterruptedException ignore) {
-                } finally {
-                    stateLock.unlock();
-                }
-            }
-            while (this.state == State.ESTABLISHED || this.state == State.CLOSING) {
-                sendFile();
-            }
-        });
+    {
+      int x = foo();
+      frob(x);
     }
+  }
+};
+A few exceptions for enum classes are given in Section 4.8.1, Enum classes.
 
-    // pointer to pointer
-    public void ptpOpen() {
-        setState(State.SYN_SENT);
-        this.receiveThread.start();
+4.1.3 Empty blocks: may be concise
+An empty block or block-like construct may be in K & R style (as described in Section 4.1.2). Alternatively, it may be closed immediately after it is opened, with no characters or line break in between ({}), unless it is part of a multi-block statement (one that directly contains multiple blocks: if/else or try/catch/finally).
 
-        int counter = 0;
-        while (this.state == State.SYN_SENT && counter < 3) {
-            try {
-                ackLock.lock();
-                Random random = new Random();
-//                this.ISN = random.nextInt(65536);
-                this.ISN = 4721;
-                sendFlagPacket(STPSegment.SYN, this.ISN);
-                boolean ackReceived = ackReceivedCondition.await(this.rto, TimeUnit.MILLISECONDS);
-                if (ackReceived) {
-                    STPSegment ackSegment = STPSegment.fromBytes(this.ack.getData(), this.ack.getLength());
-                    if (ackSegment.getType() == STPSegment.ACK && ackSegment.getSeqNo() == Utils.seq(this.ISN + 1)) {
-                        setState(State.ESTABLISHED);
-                        Logger.getLogger(Sender.class.getName()).log(Level.INFO, "Handshake succeed.");
-                        break;
-                    } else {
-                        Logger.getLogger(Sender.class.getName()).log(Level.INFO, "Closed failed.");
-                    }
-                } else {
-                    counter++;
-                }
-            } catch (InterruptedException e) {
-            } finally {
-                ackLock.unlock();
-            }
-        }
-        if (this.state != State.ESTABLISHED && counter == 3) {
-            sendFlagPacket(STPSegment.RESET, 0);
-            this.doCloseConnection();
-        }
+Examples:
+
+  // This is acceptable
+  void doNothing() {}
+
+  // This is equally acceptable
+  void doNothingElse() {
+  }
+  // This is not acceptable: No concise empty blocks in a multi-block statement
+  try {
+    doSomething();
+  } catch (Exception e) {}
+4.2 Block indentation: +2 spaces
+Each time a new block or block-like construct is opened, the indent increases by two spaces. When the block ends, the indent returns to the previous indent level. The indent level applies to both code and comments throughout the block. (See the example in Section 4.1.2, Nonempty blocks: K & R Style.)
+
+4.3 One statement per line
+Each statement is followed by a line break.
+
+4.4 Column limit: 100
+Java code has a column limit of 100 characters. A "character" means any Unicode code point. Except as noted below, any line that would exceed this limit must be line-wrapped, as explained in Section 4.5, Line-wrapping.
+
+Each Unicode code point counts as one character, even if its display width is greater or less. For example, if using fullwidth characters, you may choose to wrap the line earlier than where this rule strictly requires.
+
+Exceptions:
+
+Lines where obeying the column limit is not possible (for example, a long URL in Javadoc, or a long JSNI method reference).
+package and import statements (see Sections 3.2 Package statement and 3.3 Import statements).
+Command lines in a comment that may be copied-and-pasted into a shell.
+Very long identifiers, on the rare occasions they are called for, are allowed to exceed the column limit. In that case, the valid wrapping for the surrounding code is as produced by google-java-format.
+4.5 Line-wrapping
+Terminology Note: When code that might otherwise legally occupy a single line is divided into multiple lines, this activity is called line-wrapping.
+
+There is no comprehensive, deterministic formula showing exactly how to line-wrap in every situation. Very often there are several valid ways to line-wrap the same piece of code.
+
+Note: While the typical reason for line-wrapping is to avoid overflowing the column limit, even code that would in fact fit within the column limit may be line-wrapped at the author's discretion.
+
+Tip: Extracting a method or local variable may solve the problem without the need to line-wrap.
+
+4.5.1 Where to break
+The prime directive of line-wrapping is: prefer to break at a higher syntactic level. Also:
+
+When a line is broken at a non-assignment operator the break comes before the symbol. (Note that this is not the same practice used in Google style for other languages, such as C++ and JavaScript.)
+This also applies to the following "operator-like" symbols:
+the dot separator (.)
+the two colons of a method reference (::)
+an ampersand in a type bound (<T extends Foo & Bar>)
+a pipe in a catch block (catch (FooException | BarException e)).
+When a line is broken at an assignment operator the break typically comes after the symbol, but either way is acceptable.
+This also applies to the "assignment-operator-like" colon in an enhanced for ("foreach") statement.
+A method or constructor name stays attached to the open parenthesis (() that follows it.
+A comma (,) stays attached to the token that precedes it.
+A line is never broken adjacent to the arrow in a lambda, except that a break may come immediately after the arrow if the body of the lambda consists of a single unbraced expression. Examples:
+MyLambda<String, Long, Object> lambda =
+    (String label, Long value, Object obj) -> {
+        ...
+    };
+
+Predicate<String> predicate = str ->
+    longExpressionInvolving(str);
+Note: The primary goal for line wrapping is to have clear code, not necessarily code that fits in the smallest number of lines.
+
+4.5.2 Indent continuation lines at least +4 spaces
+When line-wrapping, each line after the first (each continuation line) is indented at least +4 from the original line.
+
+When there are multiple continuation lines, indentation may be varied beyond +4 as desired. In general, two continuation lines use the same indentation level if and only if they begin with syntactically parallel elements.
+
+Section 4.6.3 on Horizontal alignment addresses the discouraged practice of using a variable number of spaces to align certain tokens with previous lines.
+
+4.6 Whitespace
+4.6.1 Vertical Whitespace
+A single blank line always appears:
+
+Between consecutive members or initializers of a class: fields, constructors, methods, nested classes, static initializers, and instance initializers.
+Exception: A blank line between two consecutive fields (having no other code between them) is optional. Such blank lines are used as needed to create logical groupings of fields.
+Exception: Blank lines between enum constants are covered in Section 4.8.1.
+As required by other sections of this document (such as Section 3, Source file structure, and Section 3.3, Import statements).
+A single blank line may also appear anywhere it improves readability, for example between statements to organize the code into logical subsections. A blank line before the first member or initializer, or after the last member or initializer of the class, is neither encouraged nor discouraged.
+
+Multiple consecutive blank lines are permitted, but never required (or encouraged).
+
+4.6.2 Horizontal whitespace
+Beyond where required by the language or other style rules, and apart from literals, comments and Javadoc, a single ASCII space also appears in the following places only.
+
+Separating any reserved word, such as if, for or catch, from an open parenthesis (() that follows it on that line
+Separating any reserved word, such as else or catch, from a closing curly brace (}) that precedes it on that line
+Before any open curly brace ({), with two exceptions:
+@SomeAnnotation({a, b}) (no space is used)
+String[][] x = {{"foo"}}; (no space is required between {{, by item 9 below)
+On both sides of any binary or ternary operator. This also applies to the following "operator-like" symbols:
+the ampersand in a conjunctive type bound: <T extends Foo & Bar>
+the pipe for a catch block that handles multiple exceptions: catch (FooException | BarException e)
+the colon (:) in an enhanced for ("foreach") statement
+the arrow in a lambda expression: (String str) -> str.length()
+but not
+the two colons (::) of a method reference, which is written like Object::toString
+the dot separator (.), which is written like object.toString()
+After ,:; or the closing parenthesis ()) of a cast
+Between any content and a double slash (//) which begins a comment. Multiple spaces are allowed.
+Between a double slash (//) which begins a comment and the comment's text. Multiple spaces are allowed.
+Between the type and variable of a declaration: List<String> list
+Optional just inside both braces of an array initializer
+new int[] {5, 6} and new int[] { 5, 6 } are both valid
+Between a type annotation and [] or ....
+This rule is never interpreted as requiring or forbidding additional space at the start or end of a line; it addresses only interior space.
+
+4.6.3 Horizontal alignment: never required
+Terminology Note: Horizontal alignment is the practice of adding a variable number of additional spaces in your code with the goal of making certain tokens appear directly below certain other tokens on previous lines.
+
+This practice is permitted, but is never required by Google Style. It is not even required to maintain horizontal alignment in places where it was already used.
+
+Here is an example without alignment, then using alignment:
+
+private int x; // this is fine
+private Color color; // this too
+
+private int   x;      // permitted, but future edits
+private Color color;  // may leave it unaligned
+Tip: Alignment can aid readability, but it creates problems for future maintenance. Consider a future change that needs to touch just one line. This change may leave the formerly-pleasing formatting mangled, and that is allowed. More often it prompts the coder (perhaps you) to adjust whitespace on nearby lines as well, possibly triggering a cascading series of reformattings. That one-line change now has a "blast radius." This can at worst result in pointless busywork, but at best it still corrupts version history information, slows down reviewers and exacerbates merge conflicts.
+
+4.7 Grouping parentheses: recommended
+Optional grouping parentheses are omitted only when author and reviewer agree that there is no reasonable chance the code will be misinterpreted without them, nor would they have made the code easier to read. It is not reasonable to assume that every reader has the entire Java operator precedence table memorized.
+
+4.8 Specific constructs
+4.8.1 Enum classes
+After each comma that follows an enum constant, a line break is optional. Additional blank lines (usually just one) are also allowed. This is one possibility:
+
+private enum Answer {
+  YES {
+    @Override public String toString() {
+      return "yes";
     }
+  },
 
-    public void ptpSend() throws IOException {
-        this.sendFileThread.start();
-        int bytesRead = 0;
-        byte[] buffer = new byte[this.MSS];
-        FileInputStream fis = new FileInputStream(this.filename);
-        int seq = Utils.seq(this.ISN + 1);
-
-        boolean isFileFinished = false;
-
-        while (!isFileFinished) {
-            while (this.unAcked.remainingCapacity() > 0) {
-                bytesRead = fis.read(buffer);
-                if (bytesRead == -1) {
-                    isFileFinished = true;
-                    this.lastDataSequence = seq;
-                    break;
-                }
-                double sentTime = Utils.duration(System.nanoTime(), this.startTime);
-                double expectedTime = sentTime + this.rto;
-                int expectedACK = Utils.seq(seq + bytesRead);
-                STPSegment newStp = new STPSegment(STPSegment.DATA, seq, expectedACK, Arrays.copyOfRange(buffer, 0, bytesRead), sentTime, expectedTime);
-                this.unAcked.offer(newStp);
-                seq = expectedACK;
-            }
-        }
-        fis.close();
-    }
-
-    public void sendFile() {
-        for (STPSegment stp : this.unAcked) {
-            byte[] data = stp.toBytes();
-            DatagramPacket packet = new DatagramPacket(data, data.length, this.receiverAddress, this.receiverPort);
-            if (!this.sent.contains(stp.getSeqNo()) || Utils.isTimeout(stp, this.startTime)
-            ) {
-                double sendTime = Utils.duration(System.nanoTime(), this.startTime);
-                stp.setSendTime(sendTime);
-                stp.setACKTime(sendTime + rto);
-                logMessage("snd", stp.getSendTime(), STPSegment.DATA, stp.getSeqNo(), stp.getPayloadLength());
-                try {
-                    this.senderSocket.send(packet);
-                } catch (IOException ignore) {
-                }
-                this.sent.add(stp.getSeqNo());
-            }
-        }
-    }
-
-    public void ptpClose() {
-//        When the sending application (sitting above STP) is finished generating data,
-//        it issues a "close" operation to STP. This causes the sender to enter the CLOSING state.
-//        At this point, the sender must still ensure that any buffered data arrives at the receiver reliably.
-        setState(State.CLOSING);
-
-        while (this.unAcked.size() != 0) {}
-
-        setState(State.FIN_WAIT);
-
-        int counter = 0;
-        while (this.state == State.FIN_WAIT && counter < 3) {
-            try {
-                ackLock.lock();
-                sendFlagPacket(STPSegment.FIN, this.lastDataSequence);
-                boolean ackReceived = ackReceivedCondition.await(this.rto, TimeUnit.MILLISECONDS);
-                if (ackReceived) {
-                    STPSegment segment = STPSegment.fromBytes(this.ack.getData(), this.ack.getLength());
-                    if (segment.getType() == STPSegment.ACK && segment.getSeqNo() == Utils.seq(this.lastDataSequence + 1)) {
-                        setState(State.CLOSED);
-                        printLog("Closed succeed.");
-                        break;
-                    } else {
-                        printLog("Closed failed.");
-                    }
-                } else {
-                    counter++;
-                    this.retransmittedSegmentCounter++;
-                }
-            } catch (InterruptedException e) {
-            } finally {
-                ackLock.unlock();
-            }
-        }
-        if (this.state == State.FIN_WAIT && counter == 3) {
-            sendFlagPacket(STPSegment.RESET, 0);
-            this.doCloseConnection();
-        }
-        if (this.state == State.CLOSED) {
-            doCloseConnection();
-        }
-    }
-
-    public void printLog(String message) {
-        Logger.getLogger(Sender.class.getName()).log(Level.INFO, message);
-    }
-
-    private void doCloseConnection() {
-        try {
-            socketLock.lock();
-            this.senderSocket.close();
-        } finally {
-            socketLock.unlock();
-        }
-        setState(State.CLOSED);
-    }
-
-    public void setState(State state) {
-        try {
-            stateLock.lock();
-            this.state = state;
-            this.stateCondition.signalAll();
-        } finally {
-            stateLock.unlock();
-        }
-    }
-
-    public void sendFlagPacket(int type, int sequenceNumber) {
-        STPSegment stp = new STPSegment(type, sequenceNumber, null);
-        byte[] data = stp.toBytes();
-        DatagramPacket packet = new DatagramPacket(data, data.length, this.receiverAddress, this.receiverPort);
-        double sentTime = Utils.duration(System.nanoTime(), this.startTime);
-        this.logMessage("snd", sentTime, type, sequenceNumber, 0);
-        try {
-            senderSocket.send(packet);
-        } catch (IOException ignore) {
-        }
-    }
-
-    private void logMessage(String action, double sentTime, int type, int sequence, int numberOfBytes) {
-        String newLog;
-        String packetType = Utils.getStringType(type);
-
-        if (type == STPSegment.SYN) {
-            this.startTime = System.nanoTime();
-            newLog = String.format("%4s\t%10d\t%6s\t%5d\t%d%n", action, 0, packetType, sequence, numberOfBytes);
-        } else {
-            newLog = String.format("%4s\t%10.2f\t%6s\t%5d\t%d%n", action, sentTime, packetType, sequence, numberOfBytes);
-        }
-        System.out.print(newLog);
-        this.log.append(newLog);
-        this.bytesSentCounter += numberOfBytes;
-        if (type == STPSegment.DATA) {
-            this.segmentSentCounter++;
-        }
-    }
-
-    public void removeBeforeAndIncluding(int x) {
-        synchronized (this.unAcked) {
-            AtomicBoolean found = new AtomicBoolean(false);
-            this.unAcked.removeIf(segment -> {
-                if (!found.get()) {
-                    if (segment.getExpectedACK() == x) {
-                        found.set(true);
-                    }
-                    return true;
-                }
-                return false;
-            });
-        }
-    }
-
-    public void receiveACK() {
-        byte[] buffer = new byte[4];
-        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, receiverAddress, receiverPort);
-        try {
-            this.senderSocket.receive(packet);
-        } catch (IOException ignore) {
-        }
-        STPSegment ackSegment = STPSegment.fromBytes(packet.getData());
-        if (this.state == State.SYN_SENT) {
-            logMessage("rcv", Utils.duration(System.nanoTime(), this.startTime), ackSegment.getType(), ackSegment.getSeqNo(), packet.getLength() - 4);
-            ackLock.lock();
-            try {
-                this.ack = packet;
-                ackReceivedCondition.signal();
-            } finally {
-                ackLock.unlock();
-            }
-        }
-        // for sending data and receive data
-        if (this.state == State.ESTABLISHED || this.state == State.CLOSING) {
-            logMessage("rcv", Utils.duration(System.nanoTime(), this.startTime), ackSegment.getType(), ackSegment.getSeqNo(), packet.getLength() - 4);
-            removeBeforeAndIncluding(ackSegment.getSeqNo());
-        }
-        if (this.state == State.FIN_WAIT) {
-            logMessage("rcv", Utils.duration(System.nanoTime(), this.startTime), ackSegment.getType(), ackSegment.getSeqNo(), packet.getLength() - 4);
-            ackLock.lock();
-            try {
-                this.ack = packet;
-                ackReceivedCondition.signal();
-            } finally {
-                ackLock.unlock();
-            }
-        }
-    }
-
-    public void run() throws IOException {
-        ptpOpen();
-        if (this.state == State.ESTABLISHED) {
-            ptpSend();
-            ptpClose();
-        }
-        if (this.state == State.CLOSED) {
-            writeLogToFile();
-        }
-    }
-
-    private void writeLogToFile() {
-        this.log.append(String.format("Amount of (original) Data Transferred (in bytes): %d\n" +
-                        "Number of Data Segments Sent (excluding retransmissions): %d\n" +
-                        "Number of Retransmitted Data Segments: %d\n" +
-                        "Number of Duplicate Acknowledgements received: %d%n",
-                this.bytesSentCounter, this.segmentSentCounter,
-                this.retransmittedSegmentCounter, this.duplicatedACKCounter));
-        Utils.writeLogToFile(this.log, "Sender_log.txt");
-    }
-
-    public static void main(String[] args) {
-//                59606 56007 test1.txt 1000 rto
-        args = new String[]{"7777", "8888", "FileToSend.txt", "3000", "20"};
-        Logger.getLogger(Sender.class.getName()).setLevel(Level.ALL);
-        if (args.length != 5) {
-            System.err.println("\n===== Error usage, java Sender senderPort receiverPort FileReceived.txt maxWin rto ======\n");
-            System.exit(0);
-        }
-        try {
-            Sender sender = new Sender(Integer.parseInt(args[0]), Integer.parseInt(args[1]), args[2], Integer.parseInt(args[3]), Integer.parseInt(args[4]));
-            sender.run();
-        } catch (IOException ignored) {
-        }
-    }
+  NO,
+  MAYBE
 }
+An enum class with no methods and no documentation on its constants may optionally be formatted as if it were an array initializer (see Section 4.8.3.1 on array initializers).
 
+private enum Suit { CLUBS, HEARTS, SPADES, DIAMONDS }
+Since enum classes are classes, all other rules for formatting classes apply.
 
-package org.example; /**
- * Sample code for Receiver
- * Python 3
- * Usage:
- * - You need to compile it first: javac Sender.java
- * - then run it: java Sender 9000 10000 FileToReceived.txt 1000 1
- * coding: utf-8
- * <p>
- * Notes:
- * Try to run the server first with the command:
- * java Receiver 10000 9000 FileReceived.txt 1 1
- * Then run the sender:
- * java Sender 9000 10000 FileToReceived.txt 1000 1
- * <p>
- * Author: Wei Song (Tutor for COMP3331/9331)
+4.8.2 Variable declarations
+4.8.2.1 One variable per declaration
+Every variable declaration (field or local) declares only one variable: declarations such as int a, b; are not used.
+
+Exception: Multiple variable declarations are acceptable in the header of a for loop.
+
+4.8.2.2 Declared when needed
+Local variables are not habitually declared at the start of their containing block or block-like construct. Instead, local variables are declared close to the point they are first used (within reason), to minimize their scope. Local variable declarations typically have initializers, or are initialized immediately after declaration.
+
+4.8.3 Arrays
+4.8.3.1 Array initializers: can be "block-like"
+Any array initializer may optionally be formatted as if it were a "block-like construct." For example, the following are all valid (not an exhaustive list):
+
+new int[] {           new int[] {
+  0, 1, 2, 3            0,
+}                       1,
+                        2,
+new int[] {             3,
+  0, 1,               }
+  2, 3
+}                     new int[]
+                          {0, 1, 2, 3}
+4.8.3.2 No C-style array declarations
+The square brackets form a part of the type, not the variable: String[] args, not String args[].
+
+4.8.4 Switch statements
+Terminology Note: Inside the braces of a switch block are one or more statement groups. Each statement group consists of one or more switch labels (either case FOO: or default:), followed by one or more statements (or, for the last statement group, zero or more statements).
+
+4.8.4.1 Indentation
+As with any other block, the contents of a switch block are indented +2.
+
+After a switch label, there is a line break, and the indentation level is increased +2, exactly as if a block were being opened. The following switch label returns to the previous indentation level, as if a block had been closed.
+
+4.8.4.2 Fall-through: commented
+Within a switch block, each statement group either terminates abruptly (with a break, continue, return or thrown exception), or is marked with a comment to indicate that execution will or might continue into the next statement group. Any comment that communicates the idea of fall-through is sufficient (typically // fall through). This special comment is not required in the last statement group of the switch block. Example:
+
+switch (input) {
+  case 1:
+  case 2:
+    prepareOneOrTwo();
+    // fall through
+  case 3:
+    handleOneTwoOrThree();
+    break;
+  default:
+    handleLargeNumber(input);
+}
+Notice that no comment is needed after case 1:, only at the end of the statement group.
+
+4.8.4.3 Presence of the default label
+Each switch statement includes a default statement group, even if it contains no code.
+
+Exception: A switch statement for an enum type may omit the default statement group, if it includes explicit cases covering all possible values of that type. This enables IDEs or other static analysis tools to issue a warning if any cases were missed.
+
+4.8.5 Annotations
+4.8.5.1 Type-use annotations
+Type-use annotations appear immediately before the annotated type. An annotation is a type-use annotation if it is meta-annotated with @Target(ElementType.TYPE_USE). Example:
+
+final @Nullable String name;
+
+public @Nullable Person getPersonByName(String name);
+4.8.5.2 Class annotations
+Annotations applying to a class appear immediately after the documentation block, and each annotation is listed on a line of its own (that is, one annotation per line). These line breaks do not constitute line-wrapping (Section 4.5, Line-wrapping), so the indentation level is not increased. Example:
+
+@Deprecated
+@CheckReturnValue
+public final class Frozzler { ... }
+4.8.5.3 Method and constructor annotations
+The rules for annotations on method and constructor declarations are the same as the previous section. Example:
+
+@Deprecated
+@Override
+public String getNameIfPresent() { ... }
+Exception: A single parameterless annotation may instead appear together with the first line of the signature, for example:
+
+@Override public int hashCode() { ... }
+4.8.5.4 Field annotations
+Annotations applying to a field also appear immediately after the documentation block, but in this case, multiple annotations (possibly parameterized) may be listed on the same line; for example:
+
+@Partial @Mock DataLoader loader;
+4.8.5.5 Parameter and local variable annotations
+There are no specific rules for formatting annotations on parameters or local variables (except, of course, when the annotation is a type-use annotation).
+
+4.8.6 Comments
+This section addresses implementation comments. Javadoc is addressed separately in Section 7, Javadoc.
+
+Any line break may be preceded by arbitrary whitespace followed by an implementation comment. Such a comment renders the line non-blank.
+
+4.8.6.1 Block comment style
+Block comments are indented at the same level as the surrounding code. They may be in /* ... */ style or // ... style. For multi-line /* ... */ comments, subsequent lines must start with * aligned with the * on the previous line.
+
+/*
+ * This is          // And so           /* Or you can
+ * okay.            // is this.          * even do this. */
  */
+Comments are not enclosed in boxes drawn with asterisks or other characters.
 
-import java.net.*;
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.logging.*;
-import java.util.concurrent.locks.ReentrantLock;
+Tip: When writing multi-line comments, use the /* ... */ style if you want automatic code formatters to re-wrap the lines when necessary (paragraph-style). Most formatters don't re-wrap lines in // ... style comment blocks.
 
+4.8.7 Modifiers
+Class and member modifiers, when present, appear in the order recommended by the Java Language Specification:
 
-public class Sender {
+public protected private abstract default static final transient volatile synchronized native strictfp
+4.8.8 Numeric Literals
+long-valued integer literals use an uppercase L suffix, never lowercase (to avoid confusion with the digit 1). For example, 3000000000L rather than 3000000000l.
 
-    enum State {
-        CLOSED,
-        SYN_SENT,
-        ESTABLISHED,
-        CLOSING,
-        FIN_WAIT,
-    }
+5 Naming
+5.1 Rules common to all identifiers
+Identifiers use only ASCII letters and digits, and, in a small number of cases noted below, underscores. Thus each valid identifier name is matched by the regular expression \w+ .
 
-    /**
-     * The Sender will be able to connect the Receiver via UDP
-     * :param sender_port: the UDP port number to be used by the sender to send PTP segments to the receiver
-     * :param receiver_port: the UDP port number on which receiver is expecting to receive PTP segments from the sender
-     * :param filename: the name of the text file that must be transferred from sender to receiver using your reliable transport protocol.
-     * :param max_win: the maximum window size in bytes for the sender window.
-     * :param rot: the value of the retransmission timer in milliseconds. This should be an unsigned integer.
-     */
+In Google Style, special prefixes or suffixes are not used. For example, these names are not Google Style: name_, mName, s_name and kName.
 
-    private final int senderPort;
-    private final int receiverPort;
-    private final InetAddress senderAddress;
-    private int ISN;
-    private int lastDataSequence;
-    private final InetAddress receiverAddress;
-    private final DatagramSocket senderSocket;
-    private final Lock socketLock = new ReentrantLock();
-    private final StringBuffer log;
-    private State state = State.CLOSED;
-    private final String filename;
-    // must >= 1000. and should be n * 1000
-    private final int maxWin;
-    private final int rto;
-    private final BlockingQueue<STPSegment> unAcked;
-    private Set<Integer> sent;
-    private AtomicBoolean duplicateACKFlag = new AtomicBoolean(false);
-    private Map<Integer, Integer> duplicateACKs = new ConcurrentHashMap<>();
+5.2 Rules by identifier type
+5.2.1 Package names
+Package names use only lowercase letters and digits (no underscores). Consecutive words are simply concatenated together. For example, com.example.deepspace, not com.example.deepSpace or com.example.deep_space.
 
-    private long startTime = 0;
+5.2.2 Class names
+Class names are written in UpperCamelCase.
 
-    private int bytesSentCounter = 0;
-    private int segmentSentCounter = 0;
-    private int retransmittedDataSegmentsCounter = 0;
-    private int duplicatedACKCounter = 0;
-    private final Lock stateLock = new ReentrantLock();
+Class names are typically nouns or noun phrases. For example, Character or ImmutableList. Interface names may also be nouns or noun phrases (for example, List), but may sometimes be adjectives or adjective phrases instead (for example, Readable).
 
-    private DatagramPacket ack;
-    private final Lock ackLock = new ReentrantLock();
-    private final Condition ackReceivedCondition = ackLock.newCondition();
-    private Thread receiveThread;
-    private Thread sendFileThread;
-    private Random random = new Random();
-    private final Condition stateCondition = stateLock.newCondition();
+There are no specific rules or even well-established conventions for naming annotation types.
 
+A test class has a name that ends with Test, for example, HashIntegrationTest. If it covers a single class, its name is the name of that class plus Test, for example HashImplTest.
 
-    private final int MSS = 1000;
+5.2.3 Method names
+Method names are written in lowerCamelCase.
 
-    public Sender(int senderPort, int receiverPort, String filename, int maxWin, int rto) throws IOException {
-        this.senderPort = senderPort;
-        this.receiverPort = receiverPort;
-        this.senderAddress = InetAddress.getByName("127.0.0.1");
-        this.receiverAddress = InetAddress.getByName("127.0.0.1");
-        this.filename = filename;
-        this.maxWin = maxWin;
-        this.rto = rto;
-        this.log = new StringBuffer();
-        this.unAcked = new LinkedBlockingQueue<>(maxWin / MSS);
-        this.sent = new ConcurrentSkipListSet<>();
-//        this.receiveThread = new Thread(this::listen);
-        // init the UDP socket
-        Logger.getLogger(Sender.class.getName()).log(Level.INFO, "The sender is using the address {0}:{1}", new Object[]{senderAddress, senderPort});
-        this.senderSocket = new DatagramSocket(senderPort, senderAddress);
+Method names are typically verbs or verb phrases. For example, sendMessage or stop.
 
-        this.receiveThread = new Thread(() -> {
+Underscores may appear in JUnit test method names to separate logical components of the name, with each component written in lowerCamelCase, for example transferMoney_deductsFromSource. There is no One Correct Way to name test methods.
 
-            while (this.state != State.SYN_SENT) {
-                try {
-                    stateLock.lock();
-                    stateCondition.await();
-                } catch (InterruptedException ignore) {
-                } finally {
-                    stateLock.unlock();
-                }
-            }
-            while (this.state != State.CLOSED) {
-                this.receiveACK();
-            }
-        });
-        this.sendFileThread = new Thread(() -> {
-            while (this.state != State.ESTABLISHED) {
-                try {
-                    stateLock.lock();
-                    stateCondition.await();
-                } catch (InterruptedException ignore) {
-                } finally {
-                    stateLock.unlock();
-                }
-            }
-            while (this.state == State.ESTABLISHED || this.state == State.CLOSING) {
-                sendFile();
-            }
-        });
-    }
+5.2.4 Constant names
+Constant names use UPPER_SNAKE_CASE: all uppercase letters, with each word separated from the next by a single underscore. But what is a constant, exactly?
 
-    // pointer to pointer
-    public void ptpOpen() {
-        setState(State.SYN_SENT);
-        this.receiveThread.start();
+Constants are static final fields whose contents are deeply immutable and whose methods have no detectable side effects. Examples include primitives, strings, immutable value classes, and anything set to null. If any of the instance's observable state can change, it is not a constant. Merely intending to never mutate the object is not enough. Examples:
 
-        int counter = 0;
-        while (this.state == State.SYN_SENT && counter < 3) {
-            try {
-                ackLock.lock();
-//                this.ISN = random.nextInt(65536);
-                this.ISN = 4999;
-                sendFlagPacket(STPSegment.SYN, this.ISN);
-                boolean ackReceived = ackReceivedCondition.await(this.rto, TimeUnit.MILLISECONDS);
-                if (ackReceived) {
-                    STPSegment ackSegment = STPSegment.fromBytes(this.ack.getData(), this.ack.getLength());
-                    if (ackSegment.getType() == STPSegment.ACK && ackSegment.getSeqNo() == Utils.seq(this.ISN + 1)) {
-                        setState(State.ESTABLISHED);
-                        Logger.getLogger(Sender.class.getName()).log(Level.INFO, "Handshake succeed.");
-                        break;
-                    } else {
-                        Logger.getLogger(Sender.class.getName()).log(Level.INFO, "Closed failed.");
-                    }
-                } else {
-                    counter++;
-                }
-            } catch (InterruptedException e) {
-            } finally {
-                ackLock.unlock();
-            }
-        }
-        if (this.state != State.ESTABLISHED && counter == 3) {
-            sendFlagPacket(STPSegment.RESET, 0);
-            this.doCloseConnection();
-        }
-    }
+// Constants
+static final int NUMBER = 5;
+static final ImmutableList<String> NAMES = ImmutableList.of("Ed", "Ann");
+static final Map<String, Integer> AGES = ImmutableMap.of("Ed", 35, "Ann", 32);
+static final Joiner COMMA_JOINER = Joiner.on(','); // because Joiner is immutable
+static final SomeMutableType[] EMPTY_ARRAY = {};
 
-    public void ptpSend() throws IOException {
-        this.sendFileThread.start();
-        int bytesRead = 0;
-        byte[] buffer = new byte[this.MSS];
-        FileInputStream fis = new FileInputStream(this.filename);
-        int seq = Utils.seq(this.ISN + 1);
+// Not constants
+static String nonFinal = "non-final";
+final String nonStatic = "non-static";
+static final Set<String> mutableCollection = new HashSet<String>();
+static final ImmutableSet<SomeMutableType> mutableElements = ImmutableSet.of(mutable);
+static final ImmutableMap<String, SomeMutableType> mutableValues =
+    ImmutableMap.of("Ed", mutableInstance, "Ann", mutableInstance2);
+static final Logger logger = Logger.getLogger(MyClass.getName());
+static final String[] nonEmptyArray = {"these", "can", "change"};
+These names are typically nouns or noun phrases.
 
-        boolean isFileFinished = false;
+5.2.5 Non-constant field names
+Non-constant field names (static or otherwise) are written in lowerCamelCase.
 
-        while (!isFileFinished) {
-            while (this.unAcked.remainingCapacity() > 0) {
-                bytesRead = fis.read(buffer);
-                if (bytesRead == -1) {
-                    isFileFinished = true;
-                    this.lastDataSequence = seq;
-                    break;
-                }
-                double sentTime = Utils.duration(System.nanoTime(), this.startTime);
-                double expectedTime = sentTime + this.rto;
-                int expectedACK = Utils.seq(seq + bytesRead);
-                STPSegment newStp = new STPSegment(STPSegment.DATA, seq, expectedACK, Arrays.copyOfRange(buffer, 0, bytesRead), sentTime, expectedTime);
-                this.unAcked.offer(newStp);
-                seq = expectedACK;
-            }
-        }
-        fis.close();
-    }
+These names are typically nouns or noun phrases. For example, computedValues or index.
 
-    public void sendFile() {
-        while (this.unAcked.remainingCapacity() != 0) {
-        }
+5.2.6 Parameter names
+Parameter names are written in lowerCamelCase.
 
-        if (!this.duplicateACKFlag.get()) {
+One-character parameter names in public methods should be avoided.
 
-            Object[] array = this.unAcked.toArray();
-            for (int i = array.length - 1; i > 0; i--) {
-                int j = random.nextInt(i + 1);
-                STPSegment temp = (STPSegment) array[i];
-                array[i] = array[j];
-                array[j] = temp;
-            }
-            for (Object stpObject : array) {
-                STPSegment stp = (STPSegment) stpObject;
-                byte[] data = stp.toBytes();
-                DatagramPacket packet = new DatagramPacket(data, data.length, this.receiverAddress, this.receiverPort);
-                if (!this.sent.contains(stp.getSeqNo()) || Utils.isTimeout(stp, this.startTime)) {
-                    double sendTime = Utils.duration(System.nanoTime(), this.startTime);
-                    stp.setSendTime(sendTime);
-                    stp.setACKTime(sendTime + rto);
-                    if (this.sent.contains(stp.getSeqNo())) {
-                        this.retransmittedDataSegmentsCounter++;
-                    } else {
-                        this.segmentSentCounter++;
-                        this.bytesSentCounter += stp.getPayloadLength();
-                    }
-                    logMessage("snd", stp.getSendTime(), STPSegment.DATA, stp.getSeqNo(), stp.getPayloadLength());
-                    try {
-                        this.senderSocket.send(packet);
-                    } catch (IOException ignore) {
-                    }
-                    this.sent.add(stp.getSeqNo());
-                }
-            }
-        } else {
-            for (STPSegment stp : this.unAcked) {
-                byte[] data = stp.toBytes();
-                DatagramPacket packet = new DatagramPacket(data, data.length, this.receiverAddress, this.receiverPort);
-                if (!this.sent.contains(stp.getSeqNo()) || Utils.isTimeout(stp, this.startTime)) {
-                    double sendTime = Utils.duration(System.nanoTime(), this.startTime);
-                    stp.setSendTime(sendTime);
-                    stp.setACKTime(sendTime + rto);
-                    if (this.sent.contains(stp.getSeqNo())) {
-                        this.retransmittedDataSegmentsCounter++;
-                    } else {
-                        this.segmentSentCounter++;
-                        this.bytesSentCounter += stp.getPayloadLength();
-                    }
-                    logMessage("snd", stp.getSendTime(), STPSegment.DATA, stp.getSeqNo(), stp.getPayloadLength());
-                    try {
-                        this.senderSocket.send(packet);
-                    } catch (IOException ignore) {
-                    }
-                    this.sent.add(stp.getSeqNo());
-                }
-            }
-        }
-    }
+5.2.7 Local variable names
+Local variable names are written in lowerCamelCase.
 
-    public void ptpClose() {
-//        When the sending application (sitting above STP) is finished generating data,
-//        it issues a "close" operation to STP. This causes the sender to enter the CLOSING state.
-//        At this point, the sender must still ensure that any buffered data arrives at the receiver reliably.
-        setState(State.CLOSING);
+Even when final and immutable, local variables are not considered to be constants, and should not be styled as constants.
 
-        while (this.unAcked.size() != 0) {
-        }
+5.2.8 Type variable names
+Each type variable is named in one of two styles:
 
-        setState(State.FIN_WAIT);
+A single capital letter, optionally followed by a single numeral (such as E, T, X, T2)
+A name in the form used for classes (see Section 5.2.2, Class names), followed by the capital letter T (examples: RequestT, FooBarT).
+5.3 Camel case: defined
+Sometimes there is more than one reasonable way to convert an English phrase into camel case, such as when acronyms or unusual constructs like "IPv6" or "iOS" are present. To improve predictability, Google Style specifies the following (nearly) deterministic scheme.
 
+Beginning with the prose form of the name:
 
+Convert the phrase to plain ASCII and remove any apostrophes. For example, "Müller's algorithm" might become "Muellers algorithm".
+Divide this result into words, splitting on spaces and any remaining punctuation (typically hyphens).
+Recommended: if any word already has a conventional camel-case appearance in common usage, split this into its constituent parts (e.g., "AdWords" becomes "ad words"). Note that a word such as "iOS" is not really in camel case per se; it defies any convention, so this recommendation does not apply.
+Now lowercase everything (including acronyms), then uppercase only the first character of:
+... each word, to yield upper camel case, or
+... each word except the first, to yield lower camel case
+Finally, join all the words into a single identifier.
+Note that the casing of the original words is almost entirely disregarded. Examples:
 
+Prose form	Correct	Incorrect
+"XML HTTP request"	XmlHttpRequest	XMLHTTPRequest
+"new customer ID"	newCustomerId	newCustomerID
+"inner stopwatch"	innerStopwatch	innerStopWatch
+"supports IPv6 on iOS?"	supportsIpv6OnIos	supportsIPv6OnIOS
+"YouTube importer"	YouTubeImporter
+YoutubeImporter*
+*Acceptable, but not recommended.
+
+Note: Some words are ambiguously hyphenated in the English language: for example "nonempty" and "non-empty" are both correct, so the method names checkNonempty and checkNonEmpty are likewise both correct.
+
+6 Programming Practices
+6.1 @Override: always used
+A method is marked with the @Override annotation whenever it is legal. This includes a class method overriding a superclass method, a class method implementing an interface method, and an interface method respecifying a superinterface method.
+
+Exception: @Override may be omitted when the parent method is @Deprecated.
+
+6.2 Caught exceptions: not ignored
+Except as noted below, it is very rarely correct to do nothing in response to a caught exception. (Typical responses are to log it, or if it is considered "impossible", rethrow it as an AssertionError.)
+
+When it truly is appropriate to take no action whatsoever in a catch block, the reason this is justified is explained in a comment.
+
+try {
+  int i = Integer.parseInt(response);
+  return handleNumericResponse(i);
+} catch (NumberFormatException ok) {
+  // it's not numeric; that's fine, just continue
+}
+return handleTextResponse(response);
+Exception: In tests, a caught exception may be ignored without comment if its name is or begins with expected. The following is a very common idiom for ensuring that the code under test does throw an exception of the expected type, so a comment is unnecessary here.
+
+try {
+  emptyStack.pop();
+  fail();
+} catch (NoSuchElementException expected) {
+}
+6.3 Static members: qualified using class
+When a reference to a static class member must be qualified, it is qualified with that class's name, not with a reference or expression of that class's type.
+
+Foo aFoo = ...;
+Foo.aStaticMethod(); // good
+aFoo.aStaticMethod(); // bad
+somethingThatYieldsAFoo().aStaticMethod(); // very bad
+6.4 Finalizers: not used
+It is extremely rare to override Object.finalize.
+
+Tip: Don't do it. If you absolutely must, first read and understand Effective Java Item 8, "Avoid finalizers and cleaners" very carefully, and then don't do it.
+
+7 Javadoc
+7.1 Formatting
+7.1.1 General form
+The basic formatting of Javadoc blocks is as seen in this example:
+
+/**
+ * Multiple lines of Javadoc text are written here,
+ * wrapped normally...
+ */
+public int method(String p1) { ... }
+... or in this single-line example:
+
+/** An especially short bit of Javadoc. */
+The basic form is always acceptable. The single-line form may be substituted when the entirety of the Javadoc block (including comment markers) can fit on a single line. Note that this only applies when there are no block tags such as @return.
+
+7.1.2 Paragraphs
+One blank line—that is, a line containing only the aligned leading asterisk (*)—appears between paragraphs, and before the group of block tags if present. Each paragraph except the first has <p> immediately before the first word, with no space after it. HTML tags for other block-level elements, such as <ul> or <table>, are not preceded with <p>.
+
+7.1.3 Block tags
+Any of the standard "block tags" that are used appear in the order @param, @return, @throws, @deprecated, and these four types never appear with an empty description. When a block tag doesn't fit on a single line, continuation lines are indented four (or more) spaces from the position of the @.
+
+7.2 The summary fragment
+Each Javadoc block begins with a brief summary fragment. This fragment is very important: it is the only part of the text that appears in certain contexts such as class and method indexes.
+
+This is a fragment—a noun phrase or verb phrase, not a complete sentence. It does not begin with A {@code Foo} is a..., or This method returns..., nor does it form a complete imperative sentence like Save the record.. However, the fragment is capitalized and punctuated as if it were a complete sentence.
+
+Tip: A common mistake is to write simple Javadoc in the form /** @return the customer ID */. This is incorrect, and should be changed to /** Returns the customer ID. */.
+
+7.3 Where Javadoc is used
+At the minimum, Javadoc is present for every public class, and every public or protected member of such a class, with a few exceptions noted below.
+
+Additional Javadoc content may also be present, as explained in Section 7.3.4, Non-required Javadoc.
+
+7.3.1 Exception: self-explanatory members
+Javadoc is optional for "simple, obvious" members like getFoo(), in cases where there really and truly is nothing else worthwhile to say but "Returns the foo".
+
+Important: it is not appropriate to cite this exception to justify omitting relevant information that a typical reader might need to know. For example, for a method named getCanonicalName, don't omit its documentation (with the rationale that it would say only /** Returns the canonical name. */) if a typical reader may have no idea what the term "canonical name" means!
+
+7.3.2 Exception: overrides
+Javadoc is not always present on a method that overrides a supertype method.
+
+7.3.4 Non-required Javadoc
+Other classes and members have Javadoc as needed or desired.
+
+Whenever an implementation comment would be used to define the overall purpose or behavior of a class or member, that comment is written as Javadoc instead (using /**).
+
+Non-required Javadoc is not strictly required to follow the formatting rules of Sections 7.1.1, 7.1.2, 7.1.3, and 7.2, though it is of course recommended.
