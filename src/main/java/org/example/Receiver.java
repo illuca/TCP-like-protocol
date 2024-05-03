@@ -106,7 +106,7 @@ public class Receiver {
             logMessage("rcv", System.nanoTime(), stp.getType(), stp.getSeqNo(), 0);
             if (stp.getType() == STPSegment.SYN) {
                 while (!sendACKInRlp(stp.getSeqNo(), 1)) {
-
+                    // if drop by rlp, resend
                 }
                 this.expectedSeq = Utils.seq(stp.getSeqNo() + 1);
                 this.state = State.ESTABLISHED;
@@ -333,7 +333,9 @@ public class Receiver {
         int receiverPort = Integer.parseInt(args[0]);
         int senderPort = Integer.parseInt(args[1]);
         String filename = args[2];
+        // forward loss possibility
         float flp = Float.parseFloat(args[3]);
+        // reverse loss possibility
         float rlp = Float.parseFloat(args[4]);
 
         Receiver receiver = new Receiver(receiverPort, senderPort, filename, flp, rlp);

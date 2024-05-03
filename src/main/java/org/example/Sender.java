@@ -37,6 +37,9 @@ public class Sender {
     private final Lock socketLock = new ReentrantLock();
     private final StringBuffer log;
     private State state = State.CLOSED;
+    private final Lock stateLock = new ReentrantLock();
+    private final Condition stateCondition = stateLock.newCondition();
+
     // the name of the text file that must be transferred from sender to receiver using your reliable transport protocol.
     private final String filename;
     // the maximum window size in bytes for the sender window.
@@ -56,16 +59,12 @@ public class Sender {
     private int segmentSentCounter = 0;
     private int retransmittedDataSegmentsCounter = 0;
     private int duplicatedACKCounter = 0;
-    private final Lock stateLock = new ReentrantLock();
-
     private DatagramPacket ack;
     private final Lock ackLock = new ReentrantLock();
     private final Condition ackReceivedCondition = ackLock.newCondition();
     private Thread receiveThread;
     private Thread sendFileThread;
     private Random random = new Random();
-    private final Condition stateCondition = stateLock.newCondition();
-
 
     private final int MSS = 1000;
 
@@ -83,7 +82,7 @@ public class Sender {
         this.senderSocket = new DatagramSocket(senderPort, senderAddress);
 
         this.receiveThread = new Thread(() -> {
-
+            // wait until the state is SYN_SENT
             while (this.state != State.SYN_SENT) {
                 try {
                     stateLock.lock();
@@ -93,11 +92,13 @@ public class Sender {
                     stateLock.unlock();
                 }
             }
+            // keep receiving ACK until the state is CLOSED
             while (this.state != State.CLOSED) {
                 this.receiveACK();
             }
         });
         this.sendFileThread = new Thread(() -> {
+            // wait until the state is ESTABLISHED
             while (this.state != State.ESTABLISHED) {
                 try {
                     stateLock.lock();
@@ -107,13 +108,14 @@ public class Sender {
                     stateLock.unlock();
                 }
             }
+            // keep sending data until the state is CLOSED
             while (this.state == State.ESTABLISHED || this.state == State.CLOSING) {
                 sendFile();
             }
         });
     }
 
-    // pointer to pointer
+    // point to point
     public void ptpOpen() {
         setState(State.SYN_SENT);
         this.receiveThread.start();
@@ -125,13 +127,17 @@ public class Sender {
 //                this.ISN = this.random.nextInt(65536);
                 this.ISN = 999;
                 sendFlagPacket(STPSegment.SYN, this.ISN);
+                /**
+                 * true: If the thread exited waiting because it was signalled (typically via signal()
+                 *       or signalAll() methods on the Condition object).
+                 * false: If the thread exited waiting because the specified waiting time elapsed.
+                 */
                 boolean ackReceived = ackReceivedCondition.await(this.rto, TimeUnit.MILLISECONDS);
                 if (ackReceived) {
                     STPSegment ackSegment = STPSegment.fromBytes(this.ack.getData(), this.ack.getLength());
                     if (ackSegment.getType() == STPSegment.ACK && ackSegment.getSeqNo() == Utils.seq(this.ISN + 1)) {
                         setState(State.ESTABLISHED);
                         break;
-                    } else {
                     }
                 } else {
                     counter++;
@@ -410,7 +416,8 @@ public class Sender {
 
     public static void main(String[] args) {
         if (args.length == 0) {
-            args = new String[]{"7777", "8888", "FileToSend.txt", "7000", "400"};
+            // sender port, receiver port, file name, max window size, rto
+            args = new String[]{"7777", "8888", "FileToSend.txt", "7000", "100"};
             System.out.println("Args are empty. Use default configuration.");
             Sender.allowLog = true;
         }
