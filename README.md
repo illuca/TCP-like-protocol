@@ -1,5 +1,3 @@
-# Sender and Receiver Application
-
 ## Overview
 This project implements a UDP-based file transfer application with a custom protocol to ensure reliable data transmission over an unreliable network. The application is divided into two main components: the Sender and the Receiver. The Sender is responsible for sending a file, handling acknowledgments, and managing timeouts and packet losses. The Receiver listens for incoming data, handles packet ordering, and sends acknowledgments back to the Sender.
 

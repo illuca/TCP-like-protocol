@@ -36,7 +36,7 @@ public class Sender {
     private final DatagramSocket senderSocket;
     private final Lock socketLock = new ReentrantLock();
     private final StringBuffer log;
-    private State state = State.CLOSED;
+    private volatile State state = State.CLOSED;
     private final Lock stateLock = new ReentrantLock();
     private final Condition stateCondition = stateLock.newCondition();
 
