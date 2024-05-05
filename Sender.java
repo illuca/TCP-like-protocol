@@ -1,6 +1,3 @@
-package org.example;
-
-
 import java.net.*;
 import java.io.*;
 import java.util.*;
@@ -124,8 +121,8 @@ public class Sender {
         while (this.state == State.SYN_SENT && counter < 3) {
             try {
                 ackLock.lock();
-//                this.ISN = this.random.nextInt(65536);
-                this.ISN = 999;
+                this.ISN = this.random.nextInt(65536);
+//                this.ISN = 999;
                 sendFlagPacket(STPSegment.SYN, this.ISN);
                 /**
                  * true: If the thread exited waiting because it was signalled (typically via signal()
@@ -165,7 +162,8 @@ public class Sender {
         int seq = Utils.seq(this.ISN + 1);
 
         boolean isFileFinished = false;
-
+        // producer
+        // keep producing data until the file is finished
         while (!isFileFinished) {
             while (this.unAcked.remainingCapacity() > 0) {
                 bytesRead = fis.read(buffer);
@@ -186,6 +184,8 @@ public class Sender {
     }
 
     public void sendFile() {
+        // consumer
+        // keep consuming data until the unAcked queue is empty
         for (STPSegment stp : this.unAcked) {
             byte[] data = stp.toBytes();
             DatagramPacket packet = new DatagramPacket(data, data.length, this.receiverAddress, this.receiverPort);

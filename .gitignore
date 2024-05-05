@@ -41,3 +41,4 @@ build/
 /src/main/java/org/example/test1/
 /src/main/java/org/example/test2/
 .idea
+**/*.class

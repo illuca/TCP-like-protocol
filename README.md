@@ -1,39 +1,76 @@
-## Overview
-This project implements a UDP-based file transfer application with a custom protocol to ensure reliable data transmission over an unreliable network. The application is divided into two main components: the Sender and the Receiver. The Sender is responsible for sending a file, handling acknowledgments, and managing timeouts and packet losses. The Receiver listens for incoming data, handles packet ordering, and sends acknowledgments back to the Sender.
+# How to run
 
-## Features
-- **Reliable Transmission**: Implements a form of the Selective Repeat protocol to ensure reliable data transmission.
-- **Packet Loss Simulation**: Simulates forward and reverse packet loss using configurable loss probabilities (FLP and RLP).
-- **Concurrency**: Uses multiple threads to handle sending and receiving data simultaneously.
-- **State Management**: Manages connection states (e.g., SYN_SENT, ESTABLISHED, CLOSING) to handle different phases of the communication protocol.
-- **Timeouts and Retransmissions**: Implements a timeout mechanism to handle lost packets and retransmits data when necessary.
+Language and platform: Java 11.0.17
 
-## Prerequisites
-- Java 8 or higher
-- Network access between the sender and receiver machines (if not run locally)
+Project Structure:
 
-## Usage
-### Configuration
-
-### Running the Sender
-If you didn't provide the arguments, the default values will be used.
-```
-java Sender <senderPort> <receiverPort> <fileToSend> <maxWindowSize> <retransmissionTimeout>
+```bash
+$PROJECT
+├── Makefile
+├── Receiver.java
+├── Sender.java
+├── Utils.java
+└── STPSegment.java
+└── README.md
 ```
 
-- `senderPort`: The UDP port number for the Sender.
-- `receiverPort`: The UDP port number on which the Receiver is expecting to receive data.
-- `fileToSend`: Path to the file that needs to be sent.
-- `maxWindowSize`: The maximum window size in bytes for the sender's window.
-- `retransmissionTimeout`: Timeout in milliseconds for retransmissions.
+First, start receiver:
 
-### Running the Receiver
-If you didn't provide the arguments, the default values will be used.
+```bash
+cd $PROJECT
+make run-receiver ARGS="8888 7777 FileReceived.txt 0.5 0.5"
 ```
-java Receiver <receiverPort> <senderPort> <fileToReceive> <forwardLossProbability> <reverseLossProbability>
+
+Second, start sender:
+
+```bash
+cd $PROJECT
+make run-sender ARGS="7777 8888 FileToSend.txt 1000 20"
 ```
-- `receiverPort`: The UDP port number for the Receiver.
-- `senderPort`: The UDP port number from which the Receiver expects to receive data.
-- `fileToReceive`: Path where the received file will be saved.
-- `forwardLossProbability`: The probability that any outgoing segment (ACK) is lost.
-- `reverseLossProbability`: The probability that any incoming segment (Data) is lost.
+
+# Main design and description
+
+## Sender
+
+**Sliding window**:
+
+Use a `queue` with max_win size to store all segment read from file. If the segment is acknowledged by receiver, then remove current segment and all the segments before it from the queue. As a result, queue has more space to store segments read from file, looking like it is sliding.
+
+**Timeout retransmit**:
+
+For each segment read from file, add sending time and expected time to receive its ACK. Use a thread to keep checking all the segments in `queue` and if a segment is found that current time is greater than its expected time to receive ACK, then update sending time and expected ACK time and retransmit it.
+
+**Fast retransmit:**
+
+Set a boolean `interrupt`. There is a thread for listening segments from receiver. Every time it receives an ACK, it will try to find remove segments with cumulative expected ACK from queue.
+
+Let say sender sends pkt1, pkt2, pkt3, pkt4, pkt5. Receiver receives pkt1 and sends ack2. Then pkt1 will be removed from `queue`.
+
+Pkt2 gets lost due to flp. Receiver receives pkt3, pkt4, pkt5. Thus sender has 3 duplicate ack2, then `queue` fails to remove pkt1 for 3 times because pkt1 has been removed. Next, the `interrupt` i set true, which will break current sending process and re-traverse the `queue`.
+
+## Receiver
+
+Store in correct order:
+
+The `expectedSeq` is initialised as one plus sequence number of SYN after connection established.
+
+Every time receiver receives a segment, it checks if the `expectedSeq` equals sequence number of the segment. If not equal, then the segment will be stored in a `hash table`. Otherwise, the segment is stored in an `array`. `expectedSeq` is updated as segment sequence number plus segment length and use updated `expectedSeq` to keep finding the next segment  in the `hash table` and store in `array`. util it cannot find the next. Segments stored in the `array` are in order.
+
+# Trade-off
+
+I considered that sender used serialise a segment to bytes and sent bytes through udp and then receiver deserialised it to a segment. However, deserialisation always got error. I collected information and it is because the length problem. UDP always have a buffer with 1024 Bytes and the empty part will be filled with 0. Thus during deserialisation, the real length of objects cannot be obtained. Afterwards, i solved the problem but considering the extra length of serialisation, i gave up this idea.
+
+Before, in sender i use three seperate threads to listen ACK from receiver in different period, including SYN_SENT, ESTABLISHED, FIN_WAIT. But it is hard to manage 3 threads. Finally, i move all functions in one thread and use state judgement to let them deal with ACK from different periods.
+
+# Reference
+
+https://www.cs.swarthmore.edu/~newhall/unixhelp/javamakefiles.html
+
+https://docs.oracle.com/en/java/javase/11/docs/api/
+
+https://google.github.io/styleguide/javaguide.html
+
+
+
+
+
