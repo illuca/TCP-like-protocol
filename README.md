@@ -1,3 +1,9 @@
+# Overview
+
+- Implemented a UDP-based TCP-like protocol in Java using multithreading for reliable file transmission
+- Simulated packet loss on the client and server sides with flp and rlp probabilities
+- Supported three-way and four-way handshakes, timeout retransmissions, fast retransmissions, sliding windows, and Go-Back-N mechanisms
+
 # How to run
 
 Language and platform: Java 11.0.17
@@ -18,15 +24,37 @@ First, start receiver:
 
 ```bash
 cd $PROJECT
+make run-receiver ARGS="<receiverPort> <senderPort> <fileToReceive> <forwardLossProbability> <reverseLossProbability>"
+eg:
 make run-receiver ARGS="8888 7777 FileReceived.txt 0.5 0.5"
 ```
+
+- `receiverPort`: The UDP port number for the Receiver.
+- `senderPort`: The UDP port number from which the Receiver expects to receive data.
+- `fileToReceive`: Path where the received file will be saved.
+- `forwardLossProbability`: The probability that any outgoing segment (ACK) is lost.
+- `reverseLossProbability`: The probability that any incoming segment (Data) is lost.
 
 Second, start sender:
 
 ```bash
 cd $PROJECT
+make run-sender ARGS="<senderPort> <receiverPort> <fileToSend> <maxWindowSize> <retransmissionTimeout>"
+eg:
 make run-sender ARGS="7777 8888 FileToSend.txt 1000 20"
 ```
+
+- `senderPort`: The UDP port number for the Sender.
+- `receiverPort`: The UDP port number on which the Receiver is expecting to receive data.
+- `fileToSend`: Path to the file that needs to be sent.
+- `maxWindowSize`: The maximum window size in bytes for the sender's window.
+- `retransmissionTimeout`: Timeout in milliseconds for retransmissions.
+
+After doing these two steps, the transmission will start.
+
+After the transmission is complete, a file called `FileReceived.txt` will be created in the same directory as the receiver.
+
+Besides, two log files `Receiver_log.txt` and `Sender_log.txt` will be created in the same directory as the sender and receiver.
 
 # Main design and description
 
